@@ -11,7 +11,7 @@ The base library used by XiVO's rest clients
 Create a new REST client:
 
 ```python
-from xivo_rest_client import make_client
+from xivo_lib_rest_client import make_client
 
 Client = make_client('my_application.commands')
 ```
@@ -24,7 +24,7 @@ To add a new command, subclass the BaseHTTPCommand:
 ```python
 import requests
 
-from xivo_rest_client import BaseHTTPCommand
+from xivo_lib_rest_client import BaseHTTPCommand
 
 class FooCommand(BaseHTTPCommand):
 

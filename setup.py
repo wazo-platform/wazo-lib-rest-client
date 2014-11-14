@@ -20,7 +20,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 setup(
-    name='xivo_rest_client',
+    name='xivo_lib_rest_client',
     version='0.1',
 
     description='a simple library to instantiate REST clients',
@@ -28,13 +28,13 @@ setup(
     author='Avencall',
     author_email='dev@avencall.com',
 
-    url='https://github.com/xivo-pbx/xivo-rest-client',
+    url='https://github.com/xivo-pbx/xivo-lib-rest-client',
 
     packages=find_packages(),
 
     entry_points={
         'test_rest_client.commands': [
-            'example = xivo_rest_client.example_cmd:ExampleCommand',
+            'example = xivo_lib_rest_client.example_cmd:ExampleCommand',
         ],
     }
 )
