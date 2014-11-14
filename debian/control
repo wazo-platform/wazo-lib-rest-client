@@ -10,7 +10,7 @@ Homepage: http://wiki.xivo.io
 
 Package: xivo-lib-rest-client
 Architecture: all
-Depends: ${python:Depends}
+Depends: ${python:Depends}, python-requests, python-stevedore
 Description: XIVO PBX's REST client library
  XIVO is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
