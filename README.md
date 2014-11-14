@@ -1,7 +1,7 @@
 xivo-rest-client
 ================
 
-[![Build Status](https://travis-ci.org/xivo-pbx/xivo-rest-client.svg?branch=master)](https://travis-ci.org/xivo-pbx/xivo-rest-client)
+[![Build Status](https://travis-ci.org/xivo-pbx/xivo-lib-rest-client.svg?branch=master)](https://travis-ci.org/xivo-pbx/xivo-lib-rest-client)
 
 The base library used by XiVO's rest clients
 
