@@ -22,9 +22,9 @@ class ExampleCommand(BaseHTTPCommand):
 
     resource = 'test'
 
-    def __call__(self, *args, **kwargs):
-        return self.test(args, kwargs)
+    def __call__(self):
+        return self.test()
 
-    def test(self, *args, **kwargs):
+    def test(self):
         r = self.session.get(self.resource_url)
         return r.content
