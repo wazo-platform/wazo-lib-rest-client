@@ -22,11 +22,12 @@ class BaseHTTPCommand(object):
     def resource(self):
         raise NotImplementedError('The implementation of a command must have a resource field')
 
-    def __init__(self, host, port, version, use_https):
+    def __init__(self, scheme, host, port, version, session):
+        self.scheme = scheme
         self.host = host
         self.port = port
         self.version = version
-        self.scheme = 'https' if use_https else 'http'
+        self.session = session
         self.resource_url = self._build_url(self.resource)
 
     def _build_url(self, url_end):

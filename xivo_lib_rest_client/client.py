@@ -21,32 +21,6 @@ from requests import Session
 from stevedore import extension
 
 
-class _HTTPCommandProxy(object):
-
-    def __init__(self, host, port, version, username, password, Command):
-        use_https = username is not None and password is not None
-        self.command = Command(host, port, version, use_https)
-        self.username = username
-        self.password = password
-
-    def __call__(self, *args, **kwargs):
-        return self._query_url(self.command)(*args, **kwargs)
-
-    def __getattr__(self, name):
-        return self._query_url(getattr(self.command, name))
-
-    def _query_url(self, callable_):
-        def decorated(*args, **kwargs):
-            session = Session()
-            if self.username and self.password:
-                session.verify = False
-                session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
-            # headers
-            # ...
-            return callable_(session, *args, **kwargs)
-        return decorated
-
-
 class _BaseClient(object):
 
     @property
@@ -59,19 +33,25 @@ class _BaseClient(object):
         self._version = version
         self._username = username
         self._password = password
+        self._scheme = 'http' if username is None or password is None else 'https'
+        self._session = self._new_session()
         self._load_plugins()
+
+    def _new_session(self):
+        session = Session()
+        if self._scheme == 'https':
+            session.verify = False
+        if self._username and self._password:
+            session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+        return session
 
     def _load_plugins(self):
         extension_manager = extension.ExtensionManager(self.namespace)
         extension_manager.map(self._add_command_to_client)
 
     def _add_command_to_client(self, extension):
-        self.__setattr__(extension.name, _HTTPCommandProxy(self._host,
-                                                           self._port,
-                                                           self._version,
-                                                           self._username,
-                                                           self._password,
-                                                           extension.plugin))
+        command = extension.plugin(self._scheme, self._host, self._port, self._version, self._session)
+        setattr(self, extension.name, command)
 
 
 def make_client(ns):

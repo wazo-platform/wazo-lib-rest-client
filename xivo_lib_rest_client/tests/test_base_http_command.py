@@ -20,6 +20,7 @@ import unittest
 from ..base_http_command import BaseHTTPCommand
 from hamcrest import assert_that
 from hamcrest import equal_to
+from mock import Mock
 
 
 class TestBaseHTTPCommand(unittest.TestCase):
@@ -29,13 +30,13 @@ class TestBaseHTTPCommand(unittest.TestCase):
             pass
 
         self.assertRaises(NotImplementedError,
-                          NoResource, host='host', port=1234, version='42', use_https=False)
+                          NoResource, scheme='http', host='host', port=1234, version='42', session=Mock())
 
     def test_resource_url_with_https(self):
         class TestCommand(BaseHTTPCommand):
             resource = 'test'
 
-        c = TestCommand('example.com', 9000, '42', use_https=True)
+        c = TestCommand('https', 'example.com', 9000, '42', Mock())
 
         assert_that(c.resource_url, equal_to('https://example.com:9000/42/test'))
 
@@ -43,6 +44,6 @@ class TestBaseHTTPCommand(unittest.TestCase):
         class TestCommand(BaseHTTPCommand):
             resource = 'test'
 
-        c = TestCommand('example.com', 9000, '42', use_https=False)
+        c = TestCommand('http', 'example.com', 9000, '42', Mock())
 
         assert_that(c.resource_url, equal_to('http://example.com:9000/42/test'))
