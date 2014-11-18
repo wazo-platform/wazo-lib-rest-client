@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import requests
-
 from .base_http_command import BaseHTTPCommand
 
 
@@ -28,5 +26,5 @@ class ExampleCommand(BaseHTTPCommand):
         return self.test(session, *args, **kwargs)
 
     def test(self, session, *args, **kwargs):
-        r = requests.get(self.resource_url)
+        r = session.get(self.resource_url)
         return r.content
