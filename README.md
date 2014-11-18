@@ -1,9 +1,9 @@
-xivo-rest-client
-================
+xivo-lib-rest-client
+====================
 
 [![Build Status](https://travis-ci.org/xivo-pbx/xivo-lib-rest-client.svg?branch=master)](https://travis-ci.org/xivo-pbx/xivo-lib-rest-client)
 
-The base library used by XiVO's rest clients
+The base library used by XiVO's REST clients.
 
 
 ## Usage
@@ -22,8 +22,6 @@ commands from the *my_application.commands* namespace.
 To add a new command, subclass the BaseHTTPCommand:
 
 ```python
-import requests
-
 from xivo_lib_rest_client import BaseHTTPCommand
 
 class FooCommand(BaseHTTPCommand):
@@ -31,7 +29,7 @@ class FooCommand(BaseHTTPCommand):
       resource = 'foo'  # This is the resource used to execute the query
 
       def get(self, session, *args, **kwargs):
-          result = requests.get(self.resource_url, params=kwargs)
+          result = session.get(self.resource_url, params=kwargs)
           # Deserialization/validation here if needed
           return result.content
 ```
@@ -61,7 +59,7 @@ Running the tests require an installed copy of the library.
 
 ```
 % pip install -r requirements.txt
-% pip install -r test_requirements.txt
+% pip install -r test-requirements.txt
 % python setup.py install
 % nosetests
 ```
