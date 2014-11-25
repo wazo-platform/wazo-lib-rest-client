@@ -19,6 +19,8 @@
 from setuptools import setup
 from setuptools import find_packages
 
+REQUIREMENTS = [req.strip() for req in open('requirements.txt', 'r').readlines()]
+
 setup(
     name='xivo_lib_rest_client',
     version='0.1',
@@ -31,6 +33,7 @@ setup(
     url='https://github.com/xivo-pbx/xivo-lib-rest-client',
 
     packages=find_packages(),
+    install_requires=REQUIREMENTS,
 
     entry_points={
         'test_rest_client.commands': [
