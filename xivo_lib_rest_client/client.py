@@ -42,7 +42,7 @@ class _BaseClient(object):
         if self._scheme == 'https':
             session.verify = False
         if self._username and self._password:
-            session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+            session.auth = requests.auth.HTTPDigestAuth(self._username, self._password)
         return session
 
     def _load_plugins(self):
