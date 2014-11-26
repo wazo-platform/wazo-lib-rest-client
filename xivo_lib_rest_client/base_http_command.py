@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import json
+
 
 class BaseHTTPCommand(object):
 
@@ -36,3 +38,11 @@ class BaseHTTPCommand(object):
                                                                      port=self.port,
                                                                      version=self.version,
                                                                      url_end=url_end)
+
+    @staticmethod
+    def raise_from_response(response):
+        try:
+            msg = json.loads(response.text)['message']
+            response.reason = msg
+        finally:
+            response.raise_for_status()
