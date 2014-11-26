@@ -47,3 +47,22 @@ class TestBaseHTTPCommand(unittest.TestCase):
         c = TestCommand('http', 'example.com', 9000, '42', Mock())
 
         assert_that(c.resource_url, equal_to('http://example.com:9000/42/test'))
+
+    def test_raise_from_response_no_message(self):
+        class ExpectedError(Exception):
+            pass
+
+        response = Mock(text='not a dict with message',
+                        raise_for_status=Mock(side_effect=ExpectedError))
+
+        self.assertRaises(ExpectedError, BaseHTTPCommand.raise_from_response, response)
+
+    def test_raise_from_response_substitute_reason_for_the_message(self):
+        class ExpectedError(Exception):
+            pass
+
+        response = Mock(text='{"message": "Expected reason"}',
+                        raise_for_status=Mock(side_effect=ExpectedError))
+
+        self.assertRaises(ExpectedError, BaseHTTPCommand.raise_from_response, response)
+        assert_that(response.reason, equal_to('Expected reason'))
