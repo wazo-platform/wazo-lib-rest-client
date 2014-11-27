@@ -16,9 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import requests
+import logging
 
 from requests import Session
 from stevedore import extension
+
+logger = logging.getLogger(__name__)
 
 
 class _BaseClient(object):
@@ -47,7 +50,10 @@ class _BaseClient(object):
 
     def _load_plugins(self):
         extension_manager = extension.ExtensionManager(self.namespace)
-        extension_manager.map(self._add_command_to_client)
+        try:
+            extension_manager.map(self._add_command_to_client)
+        except RuntimeError:
+            logger.warning('No commands found')
 
     def _add_command_to_client(self, extension):
         command = extension.plugin(self._scheme, self._host, self._port, self._version, self._session)
