@@ -38,7 +38,7 @@ class TestBaseHTTPCommand(unittest.TestCase):
 
         c = TestCommand('https', 'example.com', 9000, '42', Mock())
 
-        assert_that(c.resource_url, equal_to('https://example.com:9000/42/test'))
+        assert_that(c.base_url, equal_to('https://example.com:9000/42/test'))
 
     def test_resource_url_with_http(self):
         class TestCommand(BaseHTTPCommand):
@@ -46,7 +46,7 @@ class TestBaseHTTPCommand(unittest.TestCase):
 
         c = TestCommand('http', 'example.com', 9000, '42', Mock())
 
-        assert_that(c.resource_url, equal_to('http://example.com:9000/42/test'))
+        assert_that(c.base_url, equal_to('http://example.com:9000/42/test'))
 
     def test_raise_from_response_no_message(self):
         class ExpectedError(Exception):

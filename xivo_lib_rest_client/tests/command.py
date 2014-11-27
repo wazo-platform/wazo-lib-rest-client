@@ -30,13 +30,7 @@ class HTTPCommandTestCase(unittest.TestCase):
     def setUp(self):
         self.session = Mock()
         self.command = self.Command(self.scheme, self.host, self.port, self.version, self.session)
-        self.base_url = '{scheme}://{host}:{port}/{version}/{resource}'.format(
-            scheme=self.scheme,
-            host=self.host,
-            port=self.port,
-            version=self.version,
-            resource=self.command.resource,
-        )
+        self.base_url = self.command.base_url
 
     def assertRaisesHTTPError(self, function, *args, **kwargs):
         self.assertRaises(HTTPError, function, *args, **kwargs)
