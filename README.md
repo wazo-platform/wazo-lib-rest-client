@@ -29,7 +29,7 @@ class FooCommand(BaseHTTPCommand):
       resource = 'foo'  # This is the resource used to execute the query
 
       def get(self, **kwargs):
-          result = self.session.get(self.resource_url, params=kwargs)
+          result = self.session.get(self.base_url, params=kwargs)
           # Deserialization/validation here if needed
           return result.content
 ```

@@ -30,14 +30,14 @@ class BaseHTTPCommand(object):
         self.port = port
         self.version = version
         self.session = session
-        self.resource_url = self._build_url(self.resource)
+        self.base_url = self._build_url()
 
-    def _build_url(self, url_end):
-        return '{scheme}://{host}:{port}/{version}/{url_end}'.format(scheme=self.scheme,
-                                                                     host=self.host,
-                                                                     port=self.port,
-                                                                     version=self.version,
-                                                                     url_end=url_end)
+    def _build_url(self):
+        return '{scheme}://{host}:{port}/{version}/{resource}'.format(scheme=self.scheme,
+                                                                      host=self.host,
+                                                                      port=self.port,
+                                                                      version=self.version,
+                                                                      resource=self.resource)
 
     @staticmethod
     def raise_from_response(response):

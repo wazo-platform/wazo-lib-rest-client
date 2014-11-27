@@ -26,5 +26,5 @@ class ExampleCommand(BaseHTTPCommand):
         return self.test()
 
     def test(self):
-        r = self.session.get(self.resource_url)
+        r = self.session.get(self.base_url)
         return r.content

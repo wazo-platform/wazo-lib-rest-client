@@ -1,2 +1,2 @@
 stevedore
-requests
+requests==2.0.0
