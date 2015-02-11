@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 import requests
 import logging
 
+from functools import partial
 from requests import Session
 from stevedore import extension
 
@@ -30,18 +31,21 @@ class _BaseClient(object):
     def namespace(self):
         raise NotImplementedError('The implementation of a command must have a namespace field')
 
-    def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None):
+    def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None, timeout=None):
         self._host = host
         self._port = port
         self._version = version
         self._username = username
         self._password = password
         self._scheme = 'http' if username is None or password is None else 'https'
+        self._default_timeout = timeout
         self._session = self._new_session()
         self._load_plugins()
 
     def _new_session(self):
         session = Session()
+        if self._default_timeout is not None:
+            session.request = partial(session.request, timeout=self._default_timeout)
         if self._scheme == 'https':
             session.verify = False
         if self._username and self._password:
