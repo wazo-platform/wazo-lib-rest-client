@@ -22,7 +22,10 @@ import time
 
 from hamcrest import assert_that
 from hamcrest import equal_to
+from hamcrest import contains_string
+from hamcrest import ends_with
 from ..client import make_client
+from ..client import _SessionBuilder
 
 Client = make_client('test_rest_client.commands')
 
@@ -53,3 +56,35 @@ class TestClient(unittest.TestCase):
         result = c.example()
 
         assert_that(result, equal_to('''{"foo": "bar"}'''))
+
+
+class TestSessionBuilder(unittest.TestCase):
+
+    def test_given_no_username_or_password_then_http_used(self):
+        builder = _SessionBuilder(username=None, password=None)
+
+        assert_that(builder.url(), contains_string('http://'))
+
+    def test_given_no_username_or_password_then_https_used(self):
+        builder = _SessionBuilder(username='username', password='password')
+
+        assert_that(builder.url(), contains_string('https://'))
+
+    def test_given_connection_parameters_then_url_built(self):
+        builder = _SessionBuilder(host='myhost', port=1234, version='1.234',
+                                  username='username', password='password')
+
+        assert_that(builder.url(), equal_to('https://myhost:1234/1.234/'))
+
+    def test_given_resource_then_resource_name_is_in_url(self):
+        builder = _SessionBuilder(username='username', password='password')
+
+        assert_that(builder.url('resource'), ends_with('/resource'))
+
+    def test_given_username_and_password_then_session_authenticated(self):
+        builder = _SessionBuilder(username='username', password='password')
+        session = builder.session()
+
+        assert_that(session.auth.username, equal_to('username'))
+        assert_that(session.auth.password, equal_to('password'))
+        assert_that(session.verify, equal_to(False))

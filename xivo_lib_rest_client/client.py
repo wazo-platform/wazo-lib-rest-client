@@ -24,6 +24,33 @@ from stevedore import extension
 logger = logging.getLogger(__name__)
 
 
+class _SessionBuilder(object):
+
+    def __init__(self, host='localhost', port=9487, version='1.1',
+                 username=None, password=None):
+        self.scheme = 'http' if username is None or password is None else 'https'
+        self.host = host
+        self.port = port
+        self.version = version
+        self.username = username
+        self.password = password
+
+    def session(self):
+        session = Session()
+        if self.scheme == 'https':
+            session.verify = False
+        if self.username and self.password:
+            session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+        return session
+
+    def url(self, resource=None):
+        return '{scheme}://{host}:{port}/{version}/{resource}'.format(scheme=self.scheme,
+                                                                      host=self.host,
+                                                                      port=self.port,
+                                                                      version=self.version,
+                                                                      resource=resource or '')
+
+
 class _BaseClient(object):
 
     @property
@@ -31,22 +58,8 @@ class _BaseClient(object):
         raise NotImplementedError('The implementation of a command must have a namespace field')
 
     def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None):
-        self._host = host
-        self._port = port
-        self._version = version
-        self._username = username
-        self._password = password
-        self._scheme = 'http' if username is None or password is None else 'https'
-        self._session = self._new_session()
+        self._session_builder = _SessionBuilder(host, port, version, username, password)
         self._load_plugins()
-
-    def _new_session(self):
-        session = Session()
-        if self._scheme == 'https':
-            session.verify = False
-        if self._username and self._password:
-            session.auth = requests.auth.HTTPDigestAuth(self._username, self._password)
-        return session
 
     def _load_plugins(self):
         extension_manager = extension.ExtensionManager(self.namespace)
@@ -56,7 +69,7 @@ class _BaseClient(object):
             logger.warning('No commands found')
 
     def _add_command_to_client(self, extension):
-        command = extension.plugin(self._scheme, self._host, self._port, self._version, self._session)
+        command = extension.plugin(self._session_builder)
         setattr(self, extension.name, command)
 
 

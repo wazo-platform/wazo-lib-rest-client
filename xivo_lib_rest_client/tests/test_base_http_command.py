@@ -30,23 +30,19 @@ class TestBaseHTTPCommand(unittest.TestCase):
             pass
 
         self.assertRaises(NotImplementedError,
-                          NoResource, scheme='http', host='host', port=1234, version='42', session=Mock())
+                          NoResource, Mock())
 
-    def test_resource_url_with_https(self):
+    def test_init_base_url_built(self):
         class TestCommand(BaseHTTPCommand):
             resource = 'test'
 
-        c = TestCommand('https', 'example.com', 9000, '42', Mock())
+        session_builder = Mock()
+        url = session_builder.url.return_value = 'https://example.com:9000/42/test'
 
-        assert_that(c.base_url, equal_to('https://example.com:9000/42/test'))
+        c = TestCommand(session_builder)
 
-    def test_resource_url_with_http(self):
-        class TestCommand(BaseHTTPCommand):
-            resource = 'test'
-
-        c = TestCommand('http', 'example.com', 9000, '42', Mock())
-
-        assert_that(c.base_url, equal_to('http://example.com:9000/42/test'))
+        assert_that(c.base_url, equal_to(url))
+        session_builder.url.assert_called_once_with(TestCommand.resource)
 
     def test_raise_from_response_no_message(self):
         class ExpectedError(Exception):
