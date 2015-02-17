@@ -77,9 +77,10 @@ class _BaseClient(object):
         setattr(self, extension.name, command)
 
 
-def make_client(ns):
+def make_client(ns, timeout=None):
 
     class Client(_BaseClient):
         namespace = ns
+        default_timeout = timeout
 
     return Client
