@@ -35,7 +35,7 @@ class TestClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir(os.path.dirname(__file__))
-        cmd = ['python', '-m', 'SimpleHTTPServer']
+        cmd = ['python', 'server/run.py']
         cls._server = subprocess.Popen(cmd)
         time.sleep(1)
 
@@ -55,6 +55,18 @@ class TestClient(unittest.TestCase):
 
         result = c.example()
 
+        assert_that(result, equal_to('''{"foo": "bar"}'''))
+
+    def test_client_command_after_session_expiry(self):
+        c = Client('localhost', 8000, 'auth/42',
+                   username='username', password='password', https=False)
+
+        result = c.example()
+        assert_that(result, equal_to('''{"foo": "bar"}'''))
+
+        time.sleep(2)
+
+        result = c.example()
         assert_that(result, equal_to('''{"foo": "bar"}'''))
 
 
