@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 class _SessionBuilder(object):
 
     def __init__(self, host='localhost', port=9487, version='1.1',
-                 username=None, password=None):
-        self.scheme = 'http' if username is None or password is None else 'https'
+                 username=None, password=None, https=True):
+        self.scheme = 'https' if https else 'http'
         self.host = host
         self.port = port
         self.version = version
@@ -57,8 +57,8 @@ class _BaseClient(object):
     def namespace(self):
         raise NotImplementedError('The implementation of a command must have a namespace field')
 
-    def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None):
-        self._session_builder = _SessionBuilder(host, port, version, username, password)
+    def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None, https=True):
+        self._session_builder = _SessionBuilder(host, port, version, username, password, https)
         self._load_plugins()
 
     def _load_plugins(self):
