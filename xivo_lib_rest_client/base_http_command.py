@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,20 +24,13 @@ class BaseHTTPCommand(object):
     def resource(self):
         raise NotImplementedError('The implementation of a command must have a resource field')
 
-    def __init__(self, scheme, host, port, version, session):
-        self.scheme = scheme
-        self.host = host
-        self.port = port
-        self.version = version
-        self.session = session
-        self.base_url = self._build_url()
+    def __init__(self, session_builder):
+        self._session_builder = session_builder
+        self.base_url = self._session_builder.url(self.resource)
 
-    def _build_url(self):
-        return '{scheme}://{host}:{port}/{version}/{resource}'.format(scheme=self.scheme,
-                                                                      host=self.host,
-                                                                      port=self.port,
-                                                                      version=self.version,
-                                                                      resource=self.resource)
+    @property
+    def session(self):
+        return self._session_builder.session()
 
     @staticmethod
     def raise_from_response(response):
