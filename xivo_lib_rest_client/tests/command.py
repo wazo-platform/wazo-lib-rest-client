@@ -28,8 +28,9 @@ class HTTPCommandTestCase(unittest.TestCase):
     version = '1.0'
 
     def setUp(self):
-        self.session = Mock()
-        self.command = self.Command(self.scheme, self.host, self.port, self.version, self.session)
+        self.session_builder = Mock()
+        self.session = self.session_builder.session.return_value
+        self.command = self.Command(self.session_builder)
         self.base_url = self.command.base_url
 
     def assertRaisesHTTPError(self, function, *args, **kwargs):
