@@ -41,6 +41,8 @@ class HTTPCommandTestCase(unittest.TestCase):
         response = Mock()
         response.status_code = status_code
         response.raise_for_status.side_effect = HTTPError()
-        if json is not None:
+        if json is None:
+            response.json.side_effect = ValueError()
+        else:
             response.json.return_value = json
         return response
