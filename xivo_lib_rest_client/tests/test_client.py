@@ -21,9 +21,11 @@ import os
 import time
 
 from hamcrest import assert_that
+from hamcrest import close_to
 from hamcrest import equal_to
 from hamcrest import contains_string
 from hamcrest import ends_with
+from requests.exceptions import Timeout
 from ..client import make_client
 from ..client import _SessionBuilder
 
@@ -100,3 +102,18 @@ class TestSessionBuilder(unittest.TestCase):
         assert_that(session.auth.username, equal_to('username'))
         assert_that(session.auth.password, equal_to('password'))
         assert_that(session.verify, equal_to(False))
+
+    def test_timeout(self):
+        builder = _SessionBuilder(timeout=1)
+
+        session = builder.session()
+
+        try:
+            start = time.time()
+            session.get('http://169.0.0.1')
+        except Timeout:
+            assert_that(time.time() - start, close_to(1.0, 0.9))
+        except KeyboardInterrupt:
+            self.fail('Should have timedout after 1 second')
+        else:
+            self.fail('Should have timedout after 1 second')
