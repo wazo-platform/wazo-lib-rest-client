@@ -11,9 +11,11 @@ The base library used by XiVO's REST clients.
 Create a new REST client:
 
 ```python
-from xivo_lib_rest_client import make_client
+from xivo_lib_rest_client import new_client_factory
 
-Client = make_client('my_application.commands')
+port = 5433
+version = '1.2'
+Client = new_client_factory('my_application.commands', port, version)
 ```
 
 This creates a new Class object that can be used to instantiate a client using
@@ -49,8 +51,8 @@ setup(
 Using the client:
 
 ```python
-client = Client(host='localhost', port=9487, version='42')
-c.foo.get()  # returns the result of GET http://localhost:9487/42/foo
+client = Client(host='localhost')
+c.foo.get()  # returns the result of GET http://localhost:5433/1.2/foo
 ```
 
 ## Testing

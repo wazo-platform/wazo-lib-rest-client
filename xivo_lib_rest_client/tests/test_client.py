@@ -21,13 +21,15 @@ import os
 import time
 
 from hamcrest import assert_that
+from hamcrest import close_to
 from hamcrest import equal_to
 from hamcrest import contains_string
 from hamcrest import ends_with
-from ..client import make_client
+from requests.exceptions import Timeout
+from ..client import new_client_factory
 from ..client import _SessionBuilder
 
-Client = make_client('test_rest_client.commands')
+Client = new_client_factory('test_rest_client.commands', 1234, '1.1')
 
 
 class TestClient(unittest.TestCase):
@@ -72,31 +74,49 @@ class TestClient(unittest.TestCase):
 
 class TestSessionBuilder(unittest.TestCase):
 
+    def new_session_builder(self, host=None, port=None, version=None,
+                            username=None, password=None, https=None, timeout=None):
+        return _SessionBuilder(host, port, version, username, password, https, timeout)
+
     def test_given_no_https_then_http_used(self):
-        builder = _SessionBuilder(https=False)
+        builder = self.new_session_builder(https=False)
 
         assert_that(builder.url(), contains_string('http://'))
 
     def test_given_https_then_https_used(self):
-        builder = _SessionBuilder(https=True)
+        builder = self.new_session_builder(https=True)
 
         assert_that(builder.url(), contains_string('https://'))
 
     def test_given_connection_parameters_then_url_built(self):
-        builder = _SessionBuilder(host='myhost', port=1234, version='1.234',
-                                  https=True)
+        builder = self.new_session_builder(host='myhost', port=1234, version='1.234',
+                                           https=True)
 
         assert_that(builder.url(), equal_to('https://myhost:1234/1.234/'))
 
     def test_given_resource_then_resource_name_is_in_url(self):
-        builder = _SessionBuilder()
+        builder = self.new_session_builder()
 
         assert_that(builder.url('resource'), ends_with('/resource'))
 
     def test_given_username_and_password_then_session_authenticated(self):
-        builder = _SessionBuilder(username='username', password='password')
+        builder = self.new_session_builder(username='username', password='password')
         session = builder.session()
 
         assert_that(session.auth.username, equal_to('username'))
         assert_that(session.auth.password, equal_to('password'))
-        assert_that(session.verify, equal_to(False))
+
+    def test_timeout(self):
+        builder = self.new_session_builder(timeout=1)
+
+        session = builder.session()
+
+        try:
+            start = time.time()
+            session.get('http://169.0.0.1')
+        except Timeout:
+            assert_that(time.time() - start, close_to(1.0, 0.9))
+        except KeyboardInterrupt:
+            self.fail('Should have timedout after 1 second')
+        else:
+            self.fail('Should have timedout after 1 second')
