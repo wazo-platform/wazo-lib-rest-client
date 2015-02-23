@@ -26,10 +26,10 @@ from hamcrest import equal_to
 from hamcrest import contains_string
 from hamcrest import ends_with
 from requests.exceptions import Timeout
-from ..client import make_client
+from ..client import new_client_factory
 from ..client import _SessionBuilder
 
-Client = make_client('test_rest_client.commands')
+Client = new_client_factory('test_rest_client.commands', 1234, '1.1')
 
 
 class TestClient(unittest.TestCase):

@@ -56,28 +56,13 @@ class _SessionBuilder(object):
 
 class _BaseClient(object):
 
-    @property
-    def namespace(self):
-        raise NotImplementedError('The implementation of a command must have a namespace field')
-
-    def __init__(self, host=None, port=None, version=None, username=None,
-                 password=None, https=None, timeout=None):
-
-        session_args = {
-            'host': host or self.default_host,
-            'port': port or self.default_port,
-            'version': version or self.default_version,
-            'username': username or self.default_username,
-            'password': password or self.default_password,
-            'https': https if https is not None else self.default_https,
-            'timeout': timeout if timeout is not None else self.default_timeout,
-        }
-
-        self._session_builder = _SessionBuilder(**session_args)
+    def __init__(self, namespace, session_builder):
+        self._namespace = namespace
+        self._session_builder = session_builder
         self._load_plugins()
 
     def _load_plugins(self):
-        extension_manager = extension.ExtensionManager(self.namespace)
+        extension_manager = extension.ExtensionManager(self._namespace)
         try:
             extension_manager.map(self._add_command_to_client)
         except RuntimeError:
@@ -88,17 +73,11 @@ class _BaseClient(object):
         setattr(self, extension.name, command)
 
 
-def make_client(ns, host='localhost', port=None, version=None,
-                username=None, password=None, timeout=30, https=True):
+def new_client_factory(ns, port, version):
 
-    class Client(_BaseClient):
-        namespace = ns
-        default_host = host
-        default_port = port
-        default_version = version
-        default_username = username
-        default_password = password
-        default_timeout = timeout
-        default_https = https
+    def new_client(host='localhost', port=port, version=version,
+                   username=None, password=None, https=False, timeout=10):
+        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout)
+        return _BaseClient(ns, session_builder)
 
-    return Client
+    return new_client
