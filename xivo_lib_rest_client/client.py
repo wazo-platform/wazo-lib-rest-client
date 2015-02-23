@@ -27,20 +27,19 @@ logger = logging.getLogger(__name__)
 
 class _SessionBuilder(object):
 
-    def __init__(self, host='localhost', port=9487, version='1.1',
-                 username=None, password=None, https=True, timeout=30):
+    def __init__(self, host, port, version, username, password, https, timeout):
         self.scheme = 'https' if https else 'http'
         self.host = host
         self.port = port
         self.version = version
         self.username = username
         self.password = password
-        self.default_timeout = timeout
+        self.timeout = timeout
 
     def session(self):
         session = Session()
-        if self.default_timeout is not None:
-            session.request = partial(session.request, timeout=self.default_timeout)
+        if self.timeout is not None:
+            session.request = partial(session.request, timeout=self.timeout)
         if self.scheme == 'https':
             session.verify = False
         if self.username and self.password:
@@ -61,8 +60,20 @@ class _BaseClient(object):
     def namespace(self):
         raise NotImplementedError('The implementation of a command must have a namespace field')
 
-    def __init__(self, host='localhost', port=9487, version='1.1', username=None, password=None, https=True, timeout=30):
-        self._session_builder = _SessionBuilder(host, port, version, username, password, https, timeout)
+    def __init__(self, host=None, port=None, version=None, username=None,
+                 password=None, https=None, timeout=None):
+
+        session_args = {
+            'host': host or self.default_host,
+            'port': port or self.default_port,
+            'version': version or self.default_version,
+            'username': username or self.default_username,
+            'password': password or self.default_password,
+            'https': https if https is not None else self.default_https,
+            'timeout': timeout if timeout is not None else self.default_timeout,
+        }
+
+        self._session_builder = _SessionBuilder(**session_args)
         self._load_plugins()
 
     def _load_plugins(self):
@@ -77,10 +88,17 @@ class _BaseClient(object):
         setattr(self, extension.name, command)
 
 
-def make_client(ns, timeout=None):
+def make_client(ns, host='localhost', port=None, version=None,
+                username=None, password=None, timeout=30, https=True):
 
     class Client(_BaseClient):
         namespace = ns
+        default_host = host
+        default_port = port
+        default_version = version
+        default_username = username
+        default_password = password
         default_timeout = timeout
+        default_https = https
 
     return Client
