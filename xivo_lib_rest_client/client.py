@@ -54,7 +54,7 @@ class _SessionBuilder(object):
                                                                       resource=resource or '')
 
 
-class _BaseClient(object):
+class _Client(object):
 
     def __init__(self, namespace, session_builder):
         self._namespace = namespace
@@ -78,6 +78,6 @@ def new_client_factory(ns, port, version):
     def new_client(host='localhost', port=port, version=version,
                    username=None, password=None, https=False, timeout=10):
         session_builder = _SessionBuilder(host, port, version, username, password, https, timeout)
-        return _BaseClient(ns, session_builder)
+        return _Client(ns, session_builder)
 
     return new_client
