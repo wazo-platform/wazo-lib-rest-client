@@ -44,6 +44,7 @@ class _SessionBuilder(object):
             session.verify = False
         if self.username and self.password:
             session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+        session.headers = {'Connection': 'close'}
         return session
 
     def url(self, resource=None):
