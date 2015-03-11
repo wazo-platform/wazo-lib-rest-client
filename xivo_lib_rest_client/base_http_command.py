@@ -27,6 +27,7 @@ class BaseHTTPCommand(object):
     def __init__(self, session_builder):
         self._session_builder = session_builder
         self.base_url = self._session_builder.url(self.resource)
+        self.timeout = self._session_builder.timeout
 
     @property
     def session(self):

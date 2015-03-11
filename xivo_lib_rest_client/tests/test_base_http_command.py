@@ -20,7 +20,7 @@ import unittest
 from ..base_http_command import BaseHTTPCommand
 from hamcrest import assert_that
 from hamcrest import equal_to
-from mock import Mock
+from mock import Mock, sentinel
 
 
 class TestBaseHTTPCommand(unittest.TestCase):
@@ -37,11 +37,13 @@ class TestBaseHTTPCommand(unittest.TestCase):
             resource = 'test'
 
         session_builder = Mock()
+        session_builder.timeout = sentinel.timeout
         url = session_builder.url.return_value = 'https://example.com:9000/42/test'
 
         c = TestCommand(session_builder)
 
         assert_that(c.base_url, equal_to(url))
+        assert_that(c.timeout, equal_to(sentinel.timeout))
         session_builder.url.assert_called_once_with(TestCommand.resource)
 
     def test_raise_from_response_no_message(self):
