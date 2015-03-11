@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
-from mock import Mock
+from mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
 
@@ -29,6 +29,7 @@ class HTTPCommandTestCase(unittest.TestCase):
 
     def setUp(self):
         self.session_builder = Mock()
+        self.session_builder.timeout = sentinel.timeout
         self.session = self.session_builder.session.return_value
         self.command = self.Command(self.session_builder)
         self.base_url = self.command.base_url
