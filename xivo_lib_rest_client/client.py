@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class _SessionBuilder(object):
 
-    def __init__(self, host, port, version, username, password, https, timeout):
+    def __init__(self, host, port, version, username, password, https, timeout, auth_method):
         self.scheme = 'https' if https else 'http'
         self.host = host
         self.port = port
@@ -35,6 +35,12 @@ class _SessionBuilder(object):
         self.username = username
         self.password = password
         self.timeout = timeout
+        if auth_method == 'basic':
+            self.auth_method = requests.auth.HTTPBasicAuth
+        elif auth_method == 'digest':
+            self.auth_method = requests.auth.HTTPDigestAuth
+        else:
+            self.auth_method = None
 
     def session(self):
         session = Session()
@@ -43,7 +49,7 @@ class _SessionBuilder(object):
         if self.scheme == 'https':
             session.verify = False
         if self.username and self.password:
-            session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+            session.auth = self.auth_method(self.username, self.password)
         session.headers = {'Connection': 'close'}
         return session
 
@@ -74,11 +80,11 @@ class _Client(object):
         setattr(self, extension.name, command)
 
 
-def new_client_factory(ns, port, version):
+def new_client_factory(ns, port, version, auth_method=None):
 
     def new_client(host='localhost', port=port, version=version,
                    username=None, password=None, https=False, timeout=10):
-        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout)
+        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
         return _Client(ns, session_builder)
 
     return new_client
