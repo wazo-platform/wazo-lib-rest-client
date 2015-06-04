@@ -29,7 +29,7 @@ from requests.exceptions import Timeout
 from ..client import new_client_factory
 from ..client import _SessionBuilder
 
-Client = new_client_factory('test_rest_client.commands', 1234, '1.1')
+Client = new_client_factory('test_rest_client.commands', 1234, '1.1', auth_method='digest')
 
 
 class TestClient(unittest.TestCase):
@@ -75,8 +75,9 @@ class TestClient(unittest.TestCase):
 class TestSessionBuilder(unittest.TestCase):
 
     def new_session_builder(self, host=None, port=None, version=None,
-                            username=None, password=None, https=None, timeout=None):
-        return _SessionBuilder(host, port, version, username, password, https, timeout)
+                            username=None, password=None, https=None, timeout=None,
+                            auth_method=None):
+        return _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
 
     def test_given_no_https_then_http_used(self):
         builder = self.new_session_builder(https=False)
@@ -100,7 +101,7 @@ class TestSessionBuilder(unittest.TestCase):
         assert_that(builder.url('resource'), ends_with('/resource'))
 
     def test_given_username_and_password_then_session_authenticated(self):
-        builder = self.new_session_builder(username='username', password='password')
+        builder = self.new_session_builder(username='username', password='password', auth_method='digest')
         session = builder.session()
 
         assert_that(session.auth.username, equal_to('username'))
