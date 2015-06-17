@@ -80,10 +80,10 @@ class _Client(object):
         setattr(self, extension.name, command)
 
 
-def new_client_factory(ns, port, version, auth_method=None):
+def new_client_factory(ns, port, version, auth_method=None, default_https=False):
 
     def new_client(host='localhost', port=port, version=version,
-                   username=None, password=None, https=False, timeout=10):
+                   username=None, password=None, https=default_https, timeout=10):
         session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
         return _Client(ns, session_builder)
 
