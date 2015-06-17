@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 
 class _SessionBuilder(object):
 
-    def __init__(self, host, port, version, username, password, https, timeout, auth_method):
+    def __init__(self, host, port, version, username, password,
+                 https, timeout, auth_method, verify_certificate):
         self.scheme = 'https' if https else 'http'
         self.host = host
         self.port = port
@@ -35,21 +36,24 @@ class _SessionBuilder(object):
         self.username = username
         self.password = password
         self.timeout = timeout
+        self._verify_certificate = verify_certificate
         if auth_method == 'basic':
             self.auth_method = requests.auth.HTTPBasicAuth
         elif auth_method == 'digest':
             self.auth_method = requests.auth.HTTPDigestAuth
         else:
             self.auth_method = None
-        if https:
-            requests.packages.urllib3.disable_warnings()
 
     def session(self):
         session = Session()
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
         if self.scheme == 'https':
-            session.verify = False
+            if not self._verify_certificate:
+                requests.packages.urllib3.disable_warnings()
+                session.verify = False
+            else:
+                session.verify = self._verify_certificate
         if self.username and self.password:
             session.auth = self.auth_method(self.username, self.password)
         session.headers = {'Connection': 'close'}
@@ -85,8 +89,8 @@ class _Client(object):
 def new_client_factory(ns, port, version, auth_method=None, default_https=False):
 
     def new_client(host='localhost', port=port, version=version,
-                   username=None, password=None, https=default_https, timeout=10):
-        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
+                   username=None, password=None, https=default_https, timeout=10, verify_certificate=False):
+        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method, verify_certificate)
         return _Client(ns, session_builder)
 
     return new_client

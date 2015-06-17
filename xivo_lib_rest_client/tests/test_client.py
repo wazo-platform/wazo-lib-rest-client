@@ -78,8 +78,9 @@ class TestSessionBuilder(unittest.TestCase):
 
     def new_session_builder(self, host=None, port=None, version=None,
                             username=None, password=None, https=None, timeout=None,
-                            auth_method=None):
-        return _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
+                            auth_method=None, verify_certificate=None):
+        return _SessionBuilder(host, port, version, username, password,
+                               https, timeout, auth_method, verify_certificate)
 
     def test_given_no_https_then_http_used(self):
         builder = self.new_session_builder(https=False)
@@ -94,7 +95,9 @@ class TestSessionBuilder(unittest.TestCase):
 
     @patch('xivo_lib_rest_client.client.requests')
     def test_given_https_then_warnings_are_disabled(self, mocked_requests):
-        self.new_session_builder(https=True)
+        builder = self.new_session_builder(https=True)
+
+        builder.session()
 
         mocked_requests.packages.urllib3.disable_warnings.assert_called_once_with()
 

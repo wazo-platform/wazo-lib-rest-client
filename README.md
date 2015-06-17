@@ -55,6 +55,19 @@ client = Client(host='localhost')
 c.foo.get()  # returns the result of GET http://localhost:5433/1.2/foo
 ```
 
+Certificates:
+
+If the user wants to verify the certificate when using HTTPS the
+verify_certificate argument can be passed to the client.
+
+Valid values include True, False or the path to a certificate file in the
+chain of trust for the certificate used by the server.
+
+```python
+client_1 = Client(https=True, verify_certificate=True)
+client_2 = Client(https=True, verify_certificate='<path/to/certificate/file>')
+```
+
 ## Testing
 
 Running the tests require an installed copy of the library.
