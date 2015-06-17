@@ -41,6 +41,8 @@ class _SessionBuilder(object):
             self.auth_method = requests.auth.HTTPDigestAuth
         else:
             self.auth_method = None
+        if https:
+            requests.packages.urllib3.disable_warnings()
 
     def session(self):
         session = Session()
