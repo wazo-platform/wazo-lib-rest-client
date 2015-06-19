@@ -25,6 +25,8 @@ from hamcrest import close_to
 from hamcrest import equal_to
 from hamcrest import contains_string
 from hamcrest import ends_with
+from mock import Mock
+from mock import patch
 from requests.exceptions import Timeout
 from ..client import new_client_factory
 from ..client import _SessionBuilder
@@ -76,19 +78,30 @@ class TestSessionBuilder(unittest.TestCase):
 
     def new_session_builder(self, host=None, port=None, version=None,
                             username=None, password=None, https=None, timeout=None,
-                            auth_method=None):
-        return _SessionBuilder(host, port, version, username, password, https, timeout, auth_method)
+                            auth_method=None, verify_certificate=None):
+        return _SessionBuilder(host, port, version, username, password,
+                               https, timeout, auth_method, verify_certificate)
 
     def test_given_no_https_then_http_used(self):
         builder = self.new_session_builder(https=False)
 
         assert_that(builder.url(), contains_string('http://'))
 
+    @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_https_then_https_used(self):
         builder = self.new_session_builder(https=True)
 
         assert_that(builder.url(), contains_string('https://'))
 
+    @patch('xivo_lib_rest_client.client.requests')
+    def test_given_https_then_warnings_are_disabled(self, mocked_requests):
+        builder = self.new_session_builder(https=True)
+
+        builder.session()
+
+        mocked_requests.packages.urllib3.disable_warnings.assert_called_once_with()
+
+    @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_connection_parameters_then_url_built(self):
         builder = self.new_session_builder(host='myhost', port=1234, version='1.234',
                                            https=True)
