@@ -60,12 +60,12 @@ Certificates:
 If the user wants to verify the certificate when using HTTPS the
 verify_certificate argument can be passed to the client.
 
-Valid values include True, False or the path to a certificate file in the
-chain of trust for the certificate used by the server.
+Valid values include True, False or the path to a CA bundle containing the chain
+of trust leading to the certificate used by the server.
 
 ```python
 client_1 = Client(https=True, verify_certificate=True)
-client_2 = Client(https=True, verify_certificate='<path/to/certificate/file>')
+client_2 = Client(https=True, verify_certificate='<path/to/bundle/file>')
 ```
 
 ## Testing
