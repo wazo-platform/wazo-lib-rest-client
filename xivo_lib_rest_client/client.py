@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import requests
 import logging
+import requests
 
 from functools import partial
 from requests import Session
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
+
+try:
+    from requests.packages.urllib3 import disable_warnings
+except ImportError:
+    # XiVO Wheezy: urllib3 1.7.1 does not have warnings nor disable_warnings
+    # XiVO Jessie: urllib3 1.9.1 will have warnings, use urllib3.disable_warnings()
+    disable_warnings = lambda: None
 
 
 class _SessionBuilder(object):
@@ -50,7 +57,7 @@ class _SessionBuilder(object):
             session.request = partial(session.request, timeout=self.timeout)
         if self.scheme == 'https':
             if not self._verify_certificate:
-                requests.packages.urllib3.disable_warnings()
+                disable_warnings()
                 session.verify = False
             else:
                 session.verify = self._verify_certificate
