@@ -93,13 +93,13 @@ class TestSessionBuilder(unittest.TestCase):
 
         assert_that(builder.url(), contains_string('https://'))
 
-    @patch('xivo_lib_rest_client.client.requests')
-    def test_given_https_then_warnings_are_disabled(self, mocked_requests):
+    @patch('xivo_lib_rest_client.client.disable_warnings')
+    def test_given_https_then_warnings_are_disabled(self, disable_warnings):
         builder = self.new_session_builder(https=True)
 
         builder.session()
 
-        mocked_requests.packages.urllib3.disable_warnings.assert_called_once_with()
+        disable_warnings.assert_called_once_with()
 
     @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_connection_parameters_then_url_built(self):
