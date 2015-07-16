@@ -40,14 +40,16 @@ class RESTCommandTestCase(unittest.TestCase):
         self.assertRaises(HTTPError, function, *args, **kwargs)
 
     @staticmethod
-    def new_response(status_code, json=None):
+    def new_response(status_code, json=None, body=None):
         response = Mock()
         response.status_code = status_code
         response.raise_for_status.side_effect = HTTPError()
-        if json is None:
-            response.json.side_effect = ValueError()
-        else:
+        if json is not None:
             response.json.return_value = json
+        elif body is not None:
+            response.text = body
+        else:
+            response.json.side_effect = ValueError()
         return response
 
     def set_response(self, action, status_code, body=None):
