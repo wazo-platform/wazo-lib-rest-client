@@ -127,7 +127,7 @@ class TestSessionBuilder(unittest.TestCase):
 
         try:
             start = time.time()
-            session.get('http://169.0.0.1')
+            session.get('http://169.254.0.1')
         except Timeout:
             assert_that(time.time() - start, close_to(1.0, 0.9))
         except KeyboardInterrupt:
