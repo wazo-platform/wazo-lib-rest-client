@@ -99,7 +99,8 @@ class _Client(object):
 def new_client_factory(ns, port, version, auth_method=None, default_https=False):
 
     def new_client(host='localhost', port=port, version=version,
-                   username=None, password=None, https=default_https, timeout=10, verify_certificate=False):
+                   username=None, password=None, https=default_https,
+                   auth_method=auth_method, timeout=10, verify_certificate=False):
         session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method, verify_certificate)
         return _Client(ns, session_builder)
 
