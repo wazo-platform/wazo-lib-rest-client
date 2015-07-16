@@ -19,6 +19,8 @@ import unittest
 from mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
+from ..client import _SessionBuilder
+
 
 class RESTCommandTestCase(unittest.TestCase):
 
@@ -28,7 +30,7 @@ class RESTCommandTestCase(unittest.TestCase):
     version = '1.0'
 
     def setUp(self):
-        self.session_builder = Mock()
+        self.session_builder = Mock(_SessionBuilder)
         self.session_builder.timeout = sentinel.timeout
         self.session = self.session_builder.session.return_value
         self.command = self.Command(self.session_builder)
@@ -47,3 +49,12 @@ class RESTCommandTestCase(unittest.TestCase):
         else:
             response.json.return_value = json
         return response
+
+    def set_response(self, action, status_code, body=None):
+        mock_action = getattr(self.session, action)
+        mock_action.return_value = self.new_response(status_code, json=body)
+        return body
+
+    def assert_request_sent(self, action, url, **kwargs):
+        mock_action = getattr(self.session, action)
+        mock_action.assert_called_once_with(url, **kwargs)
