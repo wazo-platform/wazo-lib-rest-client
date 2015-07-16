@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ from mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
 
-class HTTPCommandTestCase(unittest.TestCase):
+class RESTCommandTestCase(unittest.TestCase):
 
     scheme = 'http'
     host = 'xivo.io'

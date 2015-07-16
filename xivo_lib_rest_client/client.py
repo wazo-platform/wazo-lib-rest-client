@@ -66,12 +66,15 @@ class _SessionBuilder(object):
         session.headers = {'Connection': 'close'}
         return session
 
-    def url(self, resource=None):
-        return '{scheme}://{host}:{port}/{version}/{resource}'.format(scheme=self.scheme,
-                                                                      host=self.host,
-                                                                      port=self.port,
-                                                                      version=self.version,
-                                                                      resource=resource or '')
+    def url(self, *fragments):
+        base = '{scheme}://{host}:{port}/{version}'.format(scheme=self.scheme,
+                                                           host=self.host,
+                                                           port=self.port,
+                                                           version=self.version)
+        if fragments:
+            base = "{base}/{path}".format(base=base, path='/'.join(fragments))
+
+        return base
 
 
 class _Client(object):

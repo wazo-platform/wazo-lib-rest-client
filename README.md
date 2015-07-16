@@ -21,12 +21,12 @@ Client = new_client_factory('my_application.commands', port, version)
 This creates a new Class object that can be used to instantiate a client using
 commands from the *my_application.commands* namespace.
 
-To add a new command, subclass the BaseHTTPCommand:
+To add a new command, subclass the RESTCommand:
 
 ```python
-from xivo_lib_rest_client import BaseHTTPCommand
+from xivo_lib_rest_client import RESTCommand
 
-class FooCommand(BaseHTTPCommand):
+class FooCommand(RESTCommand):
 
       resource = 'foo'  # This is the resource used to execute the query
 
