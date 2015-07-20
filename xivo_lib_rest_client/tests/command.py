@@ -22,19 +22,13 @@ from requests.exceptions import HTTPError
 from ..client import _SessionBuilder
 
 
-class RESTCommandTestCase(unittest.TestCase):
-
-    scheme = 'http'
-    host = 'xivo.io'
-    port = 9486
-    version = '1.0'
+class HTTPCommandTestCase(unittest.TestCase):
 
     def setUp(self):
         self.session_builder = Mock(_SessionBuilder)
         self.session_builder.timeout = sentinel.timeout
         self.session = self.session_builder.session.return_value
         self.command = self.Command(self.session_builder)
-        self.base_url = self.command.base_url
 
     def assertRaisesHTTPError(self, function, *args, **kwargs):
         self.assertRaises(HTTPError, function, *args, **kwargs)
@@ -60,3 +54,15 @@ class RESTCommandTestCase(unittest.TestCase):
     def assert_request_sent(self, action, url, **kwargs):
         mock_action = getattr(self.session, action)
         mock_action.assert_called_once_with(url, **kwargs)
+
+
+class RESTCommandTestCase(HTTPCommandTestCase):
+
+    scheme = 'http'
+    host = 'xivo.io'
+    port = 9486
+    version = '1.0'
+
+    def setUp(self):
+        super(RESTCommandTestCase, self).setUp()
+        self.base_url = self.command.base_url
