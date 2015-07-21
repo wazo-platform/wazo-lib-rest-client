@@ -106,7 +106,7 @@ class TestSessionBuilder(unittest.TestCase):
         builder = self.new_session_builder(host='myhost', port=1234, version='1.234',
                                            https=True)
 
-        assert_that(builder.url(), equal_to('https://myhost:1234/1.234/'))
+        assert_that(builder.url(), equal_to('https://myhost:1234/1.234'))
 
     def test_given_resource_then_resource_name_is_in_url(self):
         builder = self.new_session_builder()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,44 @@ import unittest
 from mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
+from ..client import _SessionBuilder
+
 
 class HTTPCommandTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.session_builder = Mock(_SessionBuilder)
+        self.session_builder.timeout = sentinel.timeout
+        self.session = self.session_builder.session.return_value
+        self.command = self.Command(self.session_builder)
+
+    def assertRaisesHTTPError(self, function, *args, **kwargs):
+        self.assertRaises(HTTPError, function, *args, **kwargs)
+
+    @staticmethod
+    def new_response(status_code, json=None, body=None):
+        response = Mock()
+        response.status_code = status_code
+        response.raise_for_status.side_effect = HTTPError()
+        if json is not None:
+            response.json.return_value = json
+        elif body is not None:
+            response.text = body
+        else:
+            response.json.side_effect = ValueError()
+        return response
+
+    def set_response(self, action, status_code, body=None):
+        mock_action = getattr(self.session, action)
+        mock_action.return_value = self.new_response(status_code, json=body)
+        return body
+
+    def assert_request_sent(self, action, url, **kwargs):
+        mock_action = getattr(self.session, action)
+        mock_action.assert_called_once_with(url, **kwargs)
+
+
+class RESTCommandTestCase(HTTPCommandTestCase):
 
     scheme = 'http'
     host = 'xivo.io'
@@ -28,22 +64,5 @@ class HTTPCommandTestCase(unittest.TestCase):
     version = '1.0'
 
     def setUp(self):
-        self.session_builder = Mock()
-        self.session_builder.timeout = sentinel.timeout
-        self.session = self.session_builder.session.return_value
-        self.command = self.Command(self.session_builder)
+        super(RESTCommandTestCase, self).setUp()
         self.base_url = self.command.base_url
-
-    def assertRaisesHTTPError(self, function, *args, **kwargs):
-        self.assertRaises(HTTPError, function, *args, **kwargs)
-
-    @staticmethod
-    def new_response(status_code, json=None):
-        response = Mock()
-        response.status_code = status_code
-        response.raise_for_status.side_effect = HTTPError()
-        if json is None:
-            response.json.side_effect = ValueError()
-        else:
-            response.json.return_value = json
-        return response

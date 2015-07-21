@@ -66,12 +66,15 @@ class _SessionBuilder(object):
         session.headers = {'Connection': 'close'}
         return session
 
-    def url(self, resource=None):
-        return '{scheme}://{host}:{port}/{version}/{resource}'.format(scheme=self.scheme,
-                                                                      host=self.host,
-                                                                      port=self.port,
-                                                                      version=self.version,
-                                                                      resource=resource or '')
+    def url(self, *fragments):
+        base = '{scheme}://{host}:{port}/{version}'.format(scheme=self.scheme,
+                                                           host=self.host,
+                                                           port=self.port,
+                                                           version=self.version)
+        if fragments:
+            base = "{base}/{path}".format(base=base, path='/'.join(fragments))
+
+        return base
 
 
 class _Client(object):
@@ -93,11 +96,13 @@ class _Client(object):
         setattr(self, extension.name, command)
 
 
-def new_client_factory(ns, port, version, auth_method=None, default_https=False):
+def new_client_factory(ns, port, version, auth_method=None, default_https=False,
+                       session_builder=_SessionBuilder):
 
     def new_client(host='localhost', port=port, version=version,
-                   username=None, password=None, https=default_https, timeout=10, verify_certificate=False):
-        session_builder = _SessionBuilder(host, port, version, username, password, https, timeout, auth_method, verify_certificate)
-        return _Client(ns, session_builder)
+                   username=None, password=None, https=default_https,
+                   auth_method=auth_method, timeout=10, verify_certificate=False):
+        builder = session_builder(host, port, version, username, password, https, timeout, auth_method, verify_certificate)
+        return _Client(ns, builder)
 
     return new_client

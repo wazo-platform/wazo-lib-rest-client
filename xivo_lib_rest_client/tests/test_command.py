@@ -17,23 +17,38 @@
 
 import unittest
 
-from ..base_http_command import BaseHTTPCommand
+from ..command import HTTPCommand, RESTCommand
 from hamcrest import assert_that
 from hamcrest import equal_to
 from mock import Mock, sentinel
 
 
-class TestBaseHTTPCommand(unittest.TestCase):
+class TestHTTPCommand(unittest.TestCase):
 
-    def test_init_no_resource_specified(self):
-        class NoResource(BaseHTTPCommand):
+    def test_raise_from_response_no_message(self):
+        class ExpectedError(Exception):
             pass
 
-        self.assertRaises(NotImplementedError,
-                          NoResource, Mock())
+        response = Mock(text='not a dict with message',
+                        raise_for_status=Mock(side_effect=ExpectedError))
+
+        self.assertRaises(ExpectedError, HTTPCommand.raise_from_response, response)
+
+    def test_raise_from_response_substitute_reason_for_the_message(self):
+        class ExpectedError(Exception):
+            pass
+
+        response = Mock(text='{"message": "Expected reason"}',
+                        raise_for_status=Mock(side_effect=ExpectedError))
+
+        self.assertRaises(ExpectedError, HTTPCommand.raise_from_response, response)
+        assert_that(response.reason, equal_to('Expected reason'))
+
+
+class TestRESTCommand(unittest.TestCase):
 
     def test_init_base_url_built(self):
-        class TestCommand(BaseHTTPCommand):
+        class TestCommand(RESTCommand):
             resource = 'test'
 
         session_builder = Mock()
@@ -45,22 +60,3 @@ class TestBaseHTTPCommand(unittest.TestCase):
         assert_that(c.base_url, equal_to(url))
         assert_that(c.timeout, equal_to(sentinel.timeout))
         session_builder.url.assert_called_once_with(TestCommand.resource)
-
-    def test_raise_from_response_no_message(self):
-        class ExpectedError(Exception):
-            pass
-
-        response = Mock(text='not a dict with message',
-                        raise_for_status=Mock(side_effect=ExpectedError))
-
-        self.assertRaises(ExpectedError, BaseHTTPCommand.raise_from_response, response)
-
-    def test_raise_from_response_substitute_reason_for_the_message(self):
-        class ExpectedError(Exception):
-            pass
-
-        response = Mock(text='{"message": "Expected reason"}',
-                        raise_for_status=Mock(side_effect=ExpectedError))
-
-        self.assertRaises(ExpectedError, BaseHTTPCommand.raise_from_response, response)
-        assert_that(response.reason, equal_to('Expected reason'))

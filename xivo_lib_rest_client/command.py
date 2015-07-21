@@ -15,19 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import abc
 import json
 
 
-class BaseHTTPCommand(object):
-
-    @property
-    def resource(self):
-        raise NotImplementedError('The implementation of a command must have a resource field')
+class HTTPCommand(object):
 
     def __init__(self, session_builder):
         self._session_builder = session_builder
-        self.base_url = self._session_builder.url(self.resource)
-        self.timeout = self._session_builder.timeout
 
     @property
     def session(self):
@@ -40,3 +35,17 @@ class BaseHTTPCommand(object):
             response.reason = msg
         finally:
             response.raise_for_status()
+
+
+class RESTCommand(HTTPCommand):
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def resource(self):
+        return
+
+    def __init__(self, session_builder):
+        super(RESTCommand, self).__init__(session_builder)
+        self.base_url = self._session_builder.url(self.resource)
+        self.timeout = self._session_builder.timeout
