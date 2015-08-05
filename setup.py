@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,10 @@
 from setuptools import setup
 from setuptools import find_packages
 
-REQUIREMENTS = [req.strip() for req in open('requirements.txt', 'r').readlines()]
+REQUIREMENTS = [
+    'requests==2.0.0',
+    'stevedore==0.14.1',
+]
 
 setup(
     name='xivo_lib_rest_client',

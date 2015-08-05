@@ -1,2 +1,1 @@
-stevedore
-requests==2.0.0
+-e .  # see setup.py install_requires
