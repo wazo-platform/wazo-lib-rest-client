@@ -22,12 +22,14 @@ import time
 
 from hamcrest import assert_that
 from hamcrest import close_to
-from hamcrest import equal_to
 from hamcrest import contains_string
+from hamcrest import equal_to
 from hamcrest import ends_with
+from hamcrest import has_entry
 from mock import Mock
 from mock import patch
 from requests.exceptions import Timeout
+
 from ..client import new_client_factory
 from ..client import _SessionBuilder
 
@@ -76,11 +78,27 @@ class TestClient(unittest.TestCase):
 
 class TestSessionBuilder(unittest.TestCase):
 
-    def new_session_builder(self, host=None, port=None, version=None,
-                            username=None, password=None, https=None, timeout=None,
-                            auth_method=None, verify_certificate=None):
-        return _SessionBuilder(host, port, version, username, password,
-                               https, timeout, auth_method, verify_certificate)
+    def new_session_builder(self,
+                            host=None,
+                            port=None,
+                            version=None,
+                            username=None,
+                            password=None,
+                            https=None,
+                            timeout=None,
+                            auth_method=None,
+                            verify_certificate=None,
+                            token=None):
+        return _SessionBuilder(host,
+                               port,
+                               version,
+                               username,
+                               password,
+                               https,
+                               timeout,
+                               auth_method,
+                               verify_certificate,
+                               token)
 
     def test_given_no_https_then_http_used(self):
         builder = self.new_session_builder(https=False)
@@ -134,3 +152,11 @@ class TestSessionBuilder(unittest.TestCase):
             self.fail('Should have timedout after 1 second')
         else:
             self.fail('Should have timedout after 1 second')
+
+    def test_token(self):
+        token = 'the-one-ring'
+        builder = self.new_session_builder(token=token)
+
+        session = builder.session()
+
+        assert_that(session.headers, has_entry('X-Auth-Token', token))

@@ -34,8 +34,17 @@ except ImportError:
 
 class _SessionBuilder(object):
 
-    def __init__(self, host, port, version, username, password,
-                 https, timeout, auth_method, verify_certificate):
+    def __init__(self,
+                 host,
+                 port,
+                 version,
+                 username,
+                 password,
+                 https,
+                 timeout,
+                 auth_method,
+                 verify_certificate,
+                 token):
         self.scheme = 'https' if https else 'http'
         self.host = host
         self.port = port
@@ -50,9 +59,12 @@ class _SessionBuilder(object):
             self.auth_method = requests.auth.HTTPDigestAuth
         else:
             self.auth_method = None
+        self.token = token
 
     def session(self):
         session = Session()
+        session.headers = {'Connection': 'close'}
+
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
         if self.scheme == 'https':
@@ -63,7 +75,9 @@ class _SessionBuilder(object):
                 session.verify = self._verify_certificate
         if self.username and self.password:
             session.auth = self.auth_method(self.username, self.password)
-        session.headers = {'Connection': 'close'}
+        if self.token:
+            session.headers['X-Auth-Token'] = self.token
+
         return session
 
     def url(self, *fragments):
@@ -99,10 +113,26 @@ class _Client(object):
 def new_client_factory(ns, port, version, auth_method=None, default_https=False,
                        session_builder=_SessionBuilder):
 
-    def new_client(host='localhost', port=port, version=version,
-                   username=None, password=None, https=default_https,
-                   auth_method=auth_method, timeout=10, verify_certificate=False):
-        builder = session_builder(host, port, version, username, password, https, timeout, auth_method, verify_certificate)
+    def new_client(host='localhost',
+                   port=port,
+                   version=version,
+                   username=None,
+                   password=None,
+                   https=default_https,
+                   auth_method=auth_method,
+                   timeout=10,
+                   verify_certificate=False,
+                   token=None):
+        builder = session_builder(host,
+                                  port,
+                                  version,
+                                  username,
+                                  password,
+                                  https,
+                                  timeout,
+                                  auth_method,
+                                  verify_certificate,
+                                  token)
         return _Client(ns, builder)
 
     return new_client
