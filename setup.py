@@ -26,7 +26,7 @@ REQUIREMENTS = [
 
 setup(
     name='xivo_lib_rest_client',
-    version='0.1',
+    version='0.2',
 
     description='a simple library to instantiate REST clients',
 
