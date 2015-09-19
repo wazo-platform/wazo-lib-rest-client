@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import logging
-import requests
 
 from functools import partial
 from requests import Session
@@ -32,34 +31,40 @@ except ImportError:
     disable_warnings = lambda: None
 
 
-class _SessionBuilder(object):
+class BaseClient(object):
+
+    namespace = None
 
     def __init__(self,
                  host,
                  port,
-                 version,
-                 username,
-                 password,
-                 https,
-                 timeout,
-                 auth_method,
-                 verify_certificate,
-                 token):
-        self.scheme = 'https' if https else 'http'
+                 version='',
+                 token=None,
+                 https=True,
+                 timeout=10,
+                 verify_certificate=True):
         self.host = host
         self.port = port
         self.version = version
-        self.username = username
-        self.password = password
-        self.timeout = timeout
-        self._verify_certificate = verify_certificate
-        if auth_method == 'basic':
-            self.auth_method = requests.auth.HTTPBasicAuth
-        elif auth_method == 'digest':
-            self.auth_method = requests.auth.HTTPDigestAuth
-        else:
-            self.auth_method = None
         self.token = token
+        self.https = https
+        self.timeout = timeout
+        self.verify_certificate = verify_certificate
+        self._load_plugins()
+
+    def _load_plugins(self):
+        if not self.namespace:
+            raise ValueError('You must redefine BaseClient.namespace')
+
+        extension_manager = extension.ExtensionManager(self.namespace)
+        try:
+            extension_manager.map(self._add_command_to_client)
+        except RuntimeError:
+            logger.warning('No commands found')
+
+    def _add_command_to_client(self, extension):
+        command = extension.plugin(self)
+        setattr(self, extension.name, command)
 
     def session(self):
         session = Session()
@@ -67,21 +72,21 @@ class _SessionBuilder(object):
 
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
-        if self.scheme == 'https':
-            if not self._verify_certificate:
+
+        if self.https:
+            if not self.verify_certificate:
                 disable_warnings()
                 session.verify = False
             else:
-                session.verify = self._verify_certificate
-        if self.username and self.password:
-            session.auth = self.auth_method(self.username, self.password)
+                session.verify = self.verify_certificate
+
         if self.token:
             session.headers['X-Auth-Token'] = self.token
 
         return session
 
     def url(self, *fragments):
-        base = '{scheme}://{host}:{port}/{version}'.format(scheme=self.scheme,
+        base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self.https else 'http',
                                                            host=self.host,
                                                            port=self.port,
                                                            version=self.version)
@@ -89,50 +94,3 @@ class _SessionBuilder(object):
             base = "{base}/{path}".format(base=base, path='/'.join(fragments))
 
         return base
-
-
-class _Client(object):
-
-    def __init__(self, namespace, session_builder):
-        self._namespace = namespace
-        self._session_builder = session_builder
-        self._load_plugins()
-
-    def _load_plugins(self):
-        extension_manager = extension.ExtensionManager(self._namespace)
-        try:
-            extension_manager.map(self._add_command_to_client)
-        except RuntimeError:
-            logger.warning('No commands found')
-
-    def _add_command_to_client(self, extension):
-        command = extension.plugin(self._session_builder)
-        setattr(self, extension.name, command)
-
-
-def new_client_factory(ns, port, version, auth_method=None, default_https=False,
-                       session_builder=_SessionBuilder):
-
-    def new_client(host='localhost',
-                   port=port,
-                   version=version,
-                   username=None,
-                   password=None,
-                   https=default_https,
-                   auth_method=auth_method,
-                   timeout=10,
-                   verify_certificate=False,
-                   token=None):
-        builder = session_builder(host,
-                                  port,
-                                  version,
-                                  username,
-                                  password,
-                                  https,
-                                  timeout,
-                                  auth_method,
-                                  verify_certificate,
-                                  token)
-        return _Client(ns, builder)
-
-    return new_client

@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import subprocess
-import unittest
 import os
 import time
+import requests
+import subprocess
+import unittest
 
 from hamcrest import assert_that
 from hamcrest import close_to
@@ -30,13 +31,40 @@ from mock import Mock
 from mock import patch
 from requests.exceptions import Timeout
 
-from ..client import new_client_factory
-from ..client import _SessionBuilder
+from ..client import BaseClient
 
-Client = new_client_factory('test_rest_client.commands', 1234, '1.1', auth_method='digest')
+# Client = new_client_factory('test_rest_client.commands', 1234, '1.1', auth_method='digest')
+
+class Client(BaseClient):
+
+    namespace = 'test_rest_client.commands'
+
+    def __init__(self,
+                 host='localhost',
+                 port=1234,
+                 version='1.1',
+                 username=None,
+                 password=None,
+                 https=False,
+                 verify_certificate=False,
+                 **kwargs):
+        super(Client, self).__init__(host=host,
+                                     port=port,
+                                     version=version,
+                                     https=https,
+                                     verify_certificate=verify_certificate,
+                                     **kwargs)
+        self.username = username
+        self.password = password
+
+    def session(self):
+        session = super(Client, self).session()
+        if self.username and self.password:
+            session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
+        return session
 
 
-class TestClient(unittest.TestCase):
+class TestLiveClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -76,72 +104,71 @@ class TestClient(unittest.TestCase):
         assert_that(result, equal_to('''{"foo": "bar"}'''))
 
 
-class TestSessionBuilder(unittest.TestCase):
+class TestBaseClient(unittest.TestCase):
 
-    def new_session_builder(self,
-                            host=None,
-                            port=None,
-                            version=None,
-                            username=None,
-                            password=None,
-                            https=None,
-                            timeout=None,
-                            auth_method=None,
-                            verify_certificate=None,
-                            token=None):
-        return _SessionBuilder(host,
-                               port,
-                               version,
-                               username,
-                               password,
-                               https,
-                               timeout,
-                               auth_method,
-                               verify_certificate,
-                               token)
+    def new_client(self,
+                   host=None,
+                   port=None,
+                   version=None,
+                   username=None,
+                   password=None,
+                   https=None,
+                   timeout=None,
+                   auth_method=None,
+                   verify_certificate=None,
+                   token=None):
+        return Client(host=host,
+                      port=port,
+                      version=version,
+                      username=username,
+                      password=password,
+                      https=https,
+                      timeout=timeout,
+                      verify_certificate=verify_certificate,
+                      token=token)
 
     def test_given_no_https_then_http_used(self):
-        builder = self.new_session_builder(https=False)
+        client = self.new_client(https=False)
 
-        assert_that(builder.url(), contains_string('http://'))
+        assert_that(client.url(), contains_string('http://'))
 
     @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_https_then_https_used(self):
-        builder = self.new_session_builder(https=True)
+        client = self.new_client(https=True)
 
-        assert_that(builder.url(), contains_string('https://'))
+        assert_that(client.url(), contains_string('https://'))
 
     @patch('xivo_lib_rest_client.client.disable_warnings')
     def test_given_https_then_warnings_are_disabled(self, disable_warnings):
-        builder = self.new_session_builder(https=True)
+        client = self.new_client(https=True)
 
-        builder.session()
+        client.session()
 
         disable_warnings.assert_called_once_with()
 
     @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_connection_parameters_then_url_built(self):
-        builder = self.new_session_builder(host='myhost', port=1234, version='1.234',
-                                           https=True)
+        client = self.new_client(host='myhost', port=1234, version='1.234',
+                                 https=True)
 
-        assert_that(builder.url(), equal_to('https://myhost:1234/1.234'))
+        assert_that(client.url(), equal_to('https://myhost:1234/1.234'))
 
     def test_given_resource_then_resource_name_is_in_url(self):
-        builder = self.new_session_builder()
+        client = self.new_client()
 
-        assert_that(builder.url('resource'), ends_with('/resource'))
+        assert_that(client.url('resource'), ends_with('/resource'))
 
     def test_given_username_and_password_then_session_authenticated(self):
-        builder = self.new_session_builder(username='username', password='password', auth_method='digest')
-        session = builder.session()
+        client = self.new_client(username='username', password='password', auth_method='digest')
+        session = client.session()
 
         assert_that(session.auth.username, equal_to('username'))
         assert_that(session.auth.password, equal_to('password'))
 
     def test_timeout(self):
-        builder = self.new_session_builder(timeout=1)
+        client = self.new_client(timeout=1)
 
-        session = builder.session()
+        session = client.session()
 
         try:
             start = time.time()
@@ -155,8 +182,8 @@ class TestSessionBuilder(unittest.TestCase):
 
     def test_token(self):
         token = 'the-one-ring'
-        builder = self.new_session_builder(token=token)
+        client = self.new_client(token=token)
 
-        session = builder.session()
+        session = client.session()
 
         assert_that(session.headers, has_entry('X-Auth-Token', token))
