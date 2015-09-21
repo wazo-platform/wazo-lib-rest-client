@@ -33,7 +33,6 @@ from requests.exceptions import Timeout
 
 from ..client import BaseClient
 
-# Client = new_client_factory('test_rest_client.commands', 1234, '1.1', auth_method='digest')
 
 class Client(BaseClient):
 
