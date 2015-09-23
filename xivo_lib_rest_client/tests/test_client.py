@@ -131,7 +131,6 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), contains_string('http://'))
 
-    @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_https_then_https_used(self):
         client = self.new_client(https=True)
 
@@ -145,7 +144,6 @@ class TestBaseClient(unittest.TestCase):
 
         disable_warnings.assert_called_once_with()
 
-    @patch('xivo_lib_rest_client.client.requests', Mock())
     def test_given_connection_parameters_then_url_built(self):
         client = self.new_client(host='myhost', port=1234, version='1.234',
                                  https=True)
