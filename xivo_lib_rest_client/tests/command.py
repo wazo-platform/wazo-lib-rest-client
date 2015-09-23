@@ -19,15 +19,14 @@ import unittest
 from mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
-from ..client import _SessionBuilder
-
 
 class HTTPCommandTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.session_builder = Mock(_SessionBuilder)
+        self.session_builder = Mock()
         self.session_builder.timeout = sentinel.timeout
         self.session = self.session_builder.session.return_value
+        self.session.headers = {}
         self.command = self.Command(self.session_builder)
 
     def assertRaisesHTTPError(self, function, *args, **kwargs):
