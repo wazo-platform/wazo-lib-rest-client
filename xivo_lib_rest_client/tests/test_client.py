@@ -113,7 +113,6 @@ class TestBaseClient(unittest.TestCase):
                    password=None,
                    https=None,
                    timeout=None,
-                   auth_method=None,
                    verify_certificate=None,
                    token=None):
         return Client(host=host,
@@ -156,7 +155,7 @@ class TestBaseClient(unittest.TestCase):
         assert_that(client.url('resource'), ends_with('/resource'))
 
     def test_given_username_and_password_then_session_authenticated(self):
-        client = self.new_client(username='username', password='password', auth_method='digest')
+        client = self.new_client(username='username', password='password')
         session = client.session()
 
         assert_that(session.auth.username, equal_to('username'))
