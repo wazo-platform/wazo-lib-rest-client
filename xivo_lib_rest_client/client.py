@@ -85,6 +85,9 @@ class BaseClient(object):
 
         return session
 
+    def set_token(self, token):
+        self.token = token
+
     def url(self, *fragments):
         base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self.https else 'http',
                                                            host=self.host,
