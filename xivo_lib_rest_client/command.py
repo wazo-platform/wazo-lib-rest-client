@@ -21,12 +21,12 @@ import json
 
 class HTTPCommand(object):
 
-    def __init__(self, session_builder):
-        self._session_builder = session_builder
+    def __init__(self, client):
+        self._client = client
 
     @property
     def session(self):
-        return self._session_builder.session()
+        return self._client.session()
 
     @staticmethod
     def raise_from_response(response):
@@ -45,7 +45,7 @@ class RESTCommand(HTTPCommand):
     def resource(self):
         return
 
-    def __init__(self, session_builder):
-        super(RESTCommand, self).__init__(session_builder)
-        self.base_url = self._session_builder.url(self.resource)
-        self.timeout = self._session_builder.timeout
+    def __init__(self, client):
+        super(RESTCommand, self).__init__(client)
+        self.base_url = self._client.url(self.resource)
+        self.timeout = self._client.timeout

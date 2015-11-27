@@ -51,12 +51,12 @@ class TestRESTCommand(unittest.TestCase):
         class TestCommand(RESTCommand):
             resource = 'test'
 
-        session_builder = Mock()
-        session_builder.timeout = sentinel.timeout
-        url = session_builder.url.return_value = 'https://example.com:9000/42/test'
+        client = Mock()
+        client.timeout = sentinel.timeout
+        url = client.url.return_value = 'https://example.com:9000/42/test'
 
-        c = TestCommand(session_builder)
+        c = TestCommand(client)
 
         assert_that(c.base_url, equal_to(url))
         assert_that(c.timeout, equal_to(sentinel.timeout))
-        session_builder.url.assert_called_once_with(TestCommand.resource)
+        client.url.assert_called_once_with(TestCommand.resource)

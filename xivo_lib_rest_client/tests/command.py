@@ -23,11 +23,11 @@ from requests.exceptions import HTTPError
 class HTTPCommandTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.session_builder = Mock()
-        self.session_builder.timeout = sentinel.timeout
-        self.session = self.session_builder.session.return_value
+        self.client = Mock()
+        self.client.timeout = sentinel.timeout
+        self.session = self.client.session.return_value
         self.session.headers = {}
-        self.command = self.Command(self.session_builder)
+        self.command = self.Command(self.client)
 
     def assertRaisesHTTPError(self, function, *args, **kwargs):
         self.assertRaises(HTTPError, function, *args, **kwargs)
