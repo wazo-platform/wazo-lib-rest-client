@@ -20,9 +20,9 @@ from setuptools import setup
 from setuptools import find_packages
 
 REQUIREMENTS = [
-    'requests==2.0.0',
+    'requests==2.4.3',
     'stevedore==0.14.1',
-    'pyopenssl',
+    'pyopenssl==0.14',
 ]
 
 setup(
