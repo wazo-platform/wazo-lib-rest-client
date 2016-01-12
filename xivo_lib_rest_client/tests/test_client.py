@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -114,7 +114,8 @@ class TestBaseClient(unittest.TestCase):
                    https=None,
                    timeout=None,
                    verify_certificate=None,
-                   token=None):
+                   token=None,
+                   **kwargs):
         return Client(host=host,
                       port=port,
                       version=version,
@@ -123,7 +124,12 @@ class TestBaseClient(unittest.TestCase):
                       https=https,
                       timeout=timeout,
                       verify_certificate=verify_certificate,
-                      token=token)
+                      token=token,
+                      **kwargs)
+
+    def test_that_extra_kwargs_are_ignored(self):
+        self.new_client(patate=True)
+        # No exception
 
     def test_given_no_https_then_http_used(self):
         client = self.new_client(https=False)
