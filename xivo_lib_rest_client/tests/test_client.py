@@ -27,11 +27,10 @@ from hamcrest import contains_string
 from hamcrest import equal_to
 from hamcrest import ends_with
 from hamcrest import has_entry
-from mock import Mock
-from mock import patch
+from mock import patch, ANY
 from requests.exceptions import Timeout
 
-from ..client import BaseClient
+from ..client import BaseClient, logger
 
 
 class Client(BaseClient):
@@ -127,9 +126,11 @@ class TestBaseClient(unittest.TestCase):
                       token=token,
                       **kwargs)
 
-    def test_that_extra_kwargs_are_ignored(self):
+    @patch.object(logger, 'info')
+    def test_that_extra_kwargs_are_ignored(self, logger_info):
         self.new_client(patate=True)
-        # No exception
+
+        logger_info.assert_called_once_with(ANY, 'Client', {'patate': True})
 
     def test_given_no_https_then_http_used(self):
         client = self.new_client(https=False)
