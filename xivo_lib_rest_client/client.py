@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ class BaseClient(object):
                  token=None,
                  https=True,
                  timeout=10,
-                 verify_certificate=True):
+                 verify_certificate=True,
+                 **kwargs):
         self.host = host
         self.port = port
         self.version = version
@@ -44,6 +45,8 @@ class BaseClient(object):
         self.https = https
         self.timeout = timeout
         self.verify_certificate = verify_certificate
+        if kwargs:
+            logger.info('%s received unexpected arguments: %s', self.__class__.__name__, kwargs)
         self._load_plugins()
 
     def _load_plugins(self):
