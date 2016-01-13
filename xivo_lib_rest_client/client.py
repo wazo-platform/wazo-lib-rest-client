@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class BaseClient(object):
         self.host = host
         self.port = port
         self.version = version
-        self.token = token
+        self.token_id = token
         self.https = https
         self.timeout = timeout
         self.verify_certificate = verify_certificate
@@ -74,13 +74,13 @@ class BaseClient(object):
             else:
                 session.verify = self.verify_certificate
 
-        if self.token:
-            session.headers['X-Auth-Token'] = self.token
+        if self.token_id:
+            session.headers['X-Auth-Token'] = self.token_id
 
         return session
 
     def set_token(self, token):
-        self.token = token
+        self.token_id = token
 
     def url(self, *fragments):
         base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self.https else 'http',

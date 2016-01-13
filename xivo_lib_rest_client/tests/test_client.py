@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -177,9 +177,10 @@ class TestBaseClient(unittest.TestCase):
             self.fail('Should have timedout after 1 second')
 
     def test_token(self):
-        token = 'the-one-ring'
-        client = self.new_client(token=token)
+        token_id = 'the-one-ring'
+        client = self.new_client(token=token_id)
 
         session = client.session()
 
-        assert_that(session.headers, has_entry('X-Auth-Token', token))
+        assert_that(client.token_id, equal_to(token_id))
+        assert_that(session.headers, has_entry('X-Auth-Token', token_id))
