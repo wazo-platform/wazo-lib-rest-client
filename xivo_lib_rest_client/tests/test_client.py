@@ -182,5 +182,5 @@ class TestBaseClient(unittest.TestCase):
 
         session = client.session()
 
-        assert_that(client.token_id, equal_to(token_id))
+        assert_that(client._token_id, equal_to(token_id))
         assert_that(session.headers, has_entry('X-Auth-Token', token_id))

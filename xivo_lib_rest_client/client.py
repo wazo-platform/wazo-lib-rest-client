@@ -39,11 +39,11 @@ class BaseClient(object):
                  verify_certificate=True):
         self.host = host
         self.port = port
-        self.version = version
-        self.token_id = token
-        self.https = https
         self.timeout = timeout
-        self.verify_certificate = verify_certificate
+        self._version = version
+        self._token_id = token
+        self._https = https
+        self._verify_certificate = verify_certificate
         self._load_plugins()
 
     def _load_plugins(self):
@@ -67,26 +67,26 @@ class BaseClient(object):
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
 
-        if self.https:
-            if not self.verify_certificate:
+        if self._https:
+            if not self._verify_certificate:
                 disable_warnings()
                 session.verify = False
             else:
-                session.verify = self.verify_certificate
+                session.verify = self._verify_certificate
 
-        if self.token_id:
-            session.headers['X-Auth-Token'] = self.token_id
+        if self._token_id:
+            session.headers['X-Auth-Token'] = self._token_id
 
         return session
 
     def set_token(self, token):
-        self.token_id = token
+        self._token_id = token
 
     def url(self, *fragments):
-        base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self.https else 'http',
+        base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self._https else 'http',
                                                            host=self.host,
                                                            port=self.port,
-                                                           version=self.version)
+                                                           version=self._version)
         if fragments:
             base = "{base}/{path}".format(base=base, path='/'.join(fragments))
 
