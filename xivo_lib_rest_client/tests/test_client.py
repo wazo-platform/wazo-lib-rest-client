@@ -80,7 +80,7 @@ class TestLiveClient(unittest.TestCase):
 
         result = c.example.test()
 
-        assert_that(result, equal_to(b'''{"foo": "bar"}'''))
+        assert_that(result, equal_to('''{"foo": "bar"}'''))
 
     def test_client_command_with_call(self):
         c = Client('localhost', 8000, '42', https=False)
