@@ -2,8 +2,7 @@
 # -*- makefile -*-
 
 export PYBUILD_NAME=xivo_lib_rest_client
-export PYBUILD_DESTDIR_python2=debian/xivo-lib-rest-client/
-export PYBUILD_DESTDIR_python3=debian/xivo-lib-rest-client-py3/
+export PYBUILD_DESTDIR=debian/xivo-lib-rest-client/
 export PYBUILD_DISABLE=test
 
 %:
