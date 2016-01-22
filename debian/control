@@ -3,9 +3,10 @@ Section: python
 Priority: extra
 Maintainer: XiVO Dev Team <dev@avencall.com>
 Uploaders: XiVO Builder Team <release@xivo.io>
-Build-Depends: debhelper (>= 9), dh-python, python-all (>= 2.7), python-setuptools
+Build-Depends: debhelper (>= 9), dh-python, python-all (>= 2.7), python-setuptools, python3-all, python3-setuptools
 Standards-Version: 3.9.4
 X-Python-Version: >= 2.7
+X-Python3-Version: >= 3.4
 Homepage: http://wiki.xivo.io
 
 Package: xivo-lib-rest-client
@@ -14,4 +15,12 @@ Depends: ${python:Depends}, python-requests (>= 2.4.3), python-stevedore, python
 Description: XIVO PBX's REST client library
  XIVO is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
+
+Package: xivo-lib-rest-client-py3
+Architecture: all
+Depends: ${python3:Depends}, python3-requests (>= 2.4.3), python3-stevedore, python3-openssl
+Description: XIVO PBX's REST client library
+ XIVO is a system based on a powerful IPBX, to bring an easy to
+ install solution for telephony and related services.
  .
+ This package contains the Python 3 version of the library.
