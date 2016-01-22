@@ -80,26 +80,26 @@ class TestLiveClient(unittest.TestCase):
 
         result = c.example.test()
 
-        assert_that(result, equal_to('''{"foo": "bar"}'''))
+        assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
     def test_client_command_with_call(self):
         c = Client('localhost', 8000, '42', https=False)
 
         result = c.example()
 
-        assert_that(result, equal_to('''{"foo": "bar"}'''))
+        assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
     def test_client_command_after_session_expiry(self):
         c = Client('localhost', 8000, 'auth/42',
                    username='username', password='password', https=False)
 
         result = c.example()
-        assert_that(result, equal_to('''{"foo": "bar"}'''))
+        assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
         time.sleep(2)
 
         result = c.example()
-        assert_that(result, equal_to('''{"foo": "bar"}'''))
+        assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
 
 class TestBaseClient(unittest.TestCase):

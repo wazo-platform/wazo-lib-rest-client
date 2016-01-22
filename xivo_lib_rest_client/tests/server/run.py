@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# Copyright 2016 by Avencall
+# SPDX-License-Identifier: GPL-3.0+
+
+from __future__ import print_function
+
 import os
 
 from datetime import timedelta
@@ -28,7 +35,7 @@ def auth(path):
 
 @app.route('/<path:path>')
 def root(path):
-    print path
+    print(path)
     return send_from_directory(ROOT, path)
 
 

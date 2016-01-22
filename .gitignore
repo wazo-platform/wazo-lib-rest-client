@@ -37,7 +37,7 @@ htmlcov/
 .tox/
 .coverage
 .cache
-nosetests.xml
+nosetests*.xml
 coverage.xml
 
 # Translations
