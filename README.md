@@ -6,7 +6,8 @@ xivo-lib-rest-client
 The base library used by XiVO's REST clients.
 
 
-## Usage
+Usage
+-----
 
 Create a new REST client:
 
@@ -68,13 +69,12 @@ client_1 = Client(https=True, verify_certificate=True)
 client_2 = Client(https=True, verify_certificate='<path/to/bundle/file>')
 ```
 
-## Testing
 
-Running the tests require an installed copy of the library.
+Running unit tests
+------------------
 
 ```
-% pip install -r requirements.txt
-% pip install -r test-requirements.txt
-% python setup.py install
-% nosetests
+apt-get install python-dev libffi-dev libssl-dev
+pip install tox
+tox --recreate -e py27
 ```
