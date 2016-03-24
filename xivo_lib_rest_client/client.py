@@ -46,6 +46,7 @@ class BaseClient(object):
         self._https = https
         self._verify_certificate = verify_certificate
         if kwargs:
+            kwargs.pop('service_key', None)
             logger.info('%s received unexpected arguments: %s', self.__class__.__name__, kwargs)
         self._load_plugins()
 
