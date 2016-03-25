@@ -52,3 +52,5 @@ docs/_build/
 
 # PyBuilder
 target/
+pep8.txt
+pylint.txt
