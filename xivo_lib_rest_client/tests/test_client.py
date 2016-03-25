@@ -126,11 +126,11 @@ class TestBaseClient(unittest.TestCase):
                       token=token,
                       **kwargs)
 
-    @patch.object(logger, 'info')
-    def test_that_extra_kwargs_are_ignored(self, logger_info):
+    @patch.object(logger, 'debug')
+    def test_that_extra_kwargs_are_ignored(self, logger_debug):
         self.new_client(patate=True)
 
-        logger_info.assert_called_once_with(ANY, 'Client', {'patate': True})
+        logger_debug.assert_called_once_with(ANY, 'Client', ['patate'])
 
     def test_given_no_https_then_http_used(self):
         client = self.new_client(https=False)
