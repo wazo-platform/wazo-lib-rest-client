@@ -46,7 +46,7 @@ class BaseClient(object):
         self._https = https
         self._verify_certificate = verify_certificate
         if kwargs:
-            logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, kwargs.keys())
+            logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
         self._load_plugins()
 
     def _load_plugins(self):
