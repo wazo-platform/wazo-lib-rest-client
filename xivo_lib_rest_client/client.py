@@ -20,6 +20,7 @@ import logging
 from functools import partial
 from requests import Session
 from requests.packages.urllib3 import disable_warnings
+from six import text_type
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
@@ -91,6 +92,6 @@ class BaseClient(object):
                                                            port=self.port,
                                                            version=self._version)
         if fragments:
-            base = "{base}/{path}".format(base=base, path='/'.join(unicode(fragment) for fragment in fragments))
+            base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
 
         return base

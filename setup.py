@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'requests==2.4.3',
     'stevedore==0.14.1',
     'pyopenssl==0.14',
+    'six==1.8.0',
 ]
 
 setup(
