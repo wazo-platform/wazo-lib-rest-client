@@ -91,6 +91,6 @@ class BaseClient(object):
                                                            port=self.port,
                                                            version=self._version)
         if fragments:
-            base = "{base}/{path}".format(base=base, path='/'.join(fragments))
+            base = "{base}/{path}".format(base=base, path='/'.join(unicode(fragment) for fragment in fragments))
 
         return base
