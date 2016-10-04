@@ -156,6 +156,16 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), equal_to('https://myhost:1234/1.234'))
 
+    def test_given_prefix_then_prefix_used(self):
+        client = self.new_client(host='myhost', port=80, prefix='/api', version='1.0')
+
+        assert_that(client.url(), contains_string('myhost:80/api/1.0'))
+
+    def test_given_prefix_with_missing_leading_slash_then_prefix_used(self):
+        client = self.new_client(host='myhost', port=80, prefix='api', version='1.0')
+
+        assert_that(client.url(), contains_string('myhost:80/api/1.0'))
+
     def test_given_resource_then_resource_name_is_in_url(self):
         client = self.new_client()
 
