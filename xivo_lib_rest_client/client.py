@@ -38,6 +38,7 @@ class BaseClient(object):
                  https=True,
                  timeout=10,
                  verify_certificate=True,
+                 prefix=None,
                  **kwargs):
         self.host = host
         self.port = port
@@ -46,9 +47,17 @@ class BaseClient(object):
         self._token_id = token
         self._https = https
         self._verify_certificate = verify_certificate
+        self._prefix = self._build_prefix(prefix)
         if kwargs:
             logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
         self._load_plugins()
+
+    def _build_prefix(self, prefix):
+        if not prefix:
+            return ''
+        if not prefix.startswith('/'):
+            prefix = '/' + prefix
+        return prefix
 
     def _load_plugins(self):
         if not self.namespace:
@@ -87,10 +96,12 @@ class BaseClient(object):
         self._token_id = token
 
     def url(self, *fragments):
-        base = '{scheme}://{host}:{port}/{version}'.format(scheme='https' if self._https else 'http',
-                                                           host=self.host,
-                                                           port=self.port,
-                                                           version=self._version)
+        base = '{scheme}://{host}:{port}{prefix}/{version}'.format(
+                scheme='https' if self._https else 'http',
+                host=self.host,
+                port=self.port,
+                prefix=self._prefix,
+                version=self._version)
         if fragments:
             base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
 
