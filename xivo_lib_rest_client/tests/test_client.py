@@ -27,7 +27,12 @@ from hamcrest import contains_string
 from hamcrest import equal_to
 from hamcrest import ends_with
 from hamcrest import has_entry
-from mock import patch, ANY
+from hamcrest import is_
+from mock import ANY
+from mock import Mock
+from mock import patch
+from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
 from requests.exceptions import Timeout
 
 from ..client import BaseClient, logger
@@ -60,6 +65,18 @@ class Client(BaseClient):
         if self.username and self.password:
             session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
         return session
+
+
+class MockSessionClient(BaseClient):
+
+    namespace = 'some-namespace'
+
+    def __init__(self, session):
+        super(MockSessionClient, self).__init__('localhost', 1234)
+        self._session = session
+
+    def session(self):
+        return self._session
 
 
 class TestLiveClient(unittest.TestCase):
@@ -201,3 +218,29 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client._token_id, equal_to(token_id))
         assert_that(session.headers, has_entry('X-Auth-Token', token_id))
+
+    def test_given_no_exception_when_is_server_reachable_then_true(self):
+        session = Mock()
+        client = MockSessionClient(session)
+
+        result = client.is_server_reachable()
+
+        assert_that(result, is_(True))
+
+    def test_given_httperror_exception_when_is_server_reachable_then_true(self):
+        session = Mock()
+        session.head.side_effect = HTTPError
+        client = MockSessionClient(session)
+
+        result = client.is_server_reachable()
+
+        assert_that(result, is_(True))
+
+    def test_given_requestexception_when_is_server_reachable_then_false(self):
+        session = Mock()
+        session.head.side_effect = RequestException
+        client = MockSessionClient(session)
+
+        result = client.is_server_reachable()
+
+        assert_that(result, is_(False))

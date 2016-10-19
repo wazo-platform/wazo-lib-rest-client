@@ -18,6 +18,8 @@
 import logging
 
 from functools import partial
+from requests import HTTPError
+from requests import RequestException
 from requests import Session
 from requests.packages.urllib3 import disable_warnings
 from six import text_type
@@ -106,3 +108,13 @@ class BaseClient(object):
             base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
 
         return base
+
+    def is_server_reachable(self):
+        try:
+            self.session().head(self.url())
+            return True
+        except HTTPError:
+            return True
+        except RequestException as e:
+            logger.debug('Server unreachable: %s', e)
+            return False
