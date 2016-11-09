@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@ class HTTPCommandTestCase(unittest.TestCase):
             response.json.return_value = json
         elif body is not None:
             response.text = body
+            response.content = body
         else:
             response.json.side_effect = ValueError()
         return response
