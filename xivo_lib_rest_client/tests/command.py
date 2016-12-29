@@ -60,7 +60,7 @@ class HTTPCommandTestCase(unittest.TestCase):
 class RESTCommandTestCase(HTTPCommandTestCase):
 
     scheme = 'http'
-    host = 'xivo.io'
+    host = 'wazo.community'
     port = 9486
     version = '1.0'
 

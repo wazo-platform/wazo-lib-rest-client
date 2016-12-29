@@ -32,10 +32,10 @@ setup(
 
     description='a simple library to instantiate REST clients',
 
-    author='Avencall',
-    author_email='dev@avencall.com',
+    author='Wazo Authors',
+    author_email='dev.wazo@gmail.com',
 
-    url='https://github.com/wazo-pbx/xivo-lib-rest-client',
+    url='http://wazo.community',
 
     packages=find_packages(),
     install_requires=REQUIREMENTS,
