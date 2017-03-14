@@ -21,7 +21,7 @@ from setuptools import find_packages
 
 REQUIREMENTS = [
     'requests==2.4.3',
-    'stevedore==0.14.1',
+    'stevedore==1.17.1',
     'pyopenssl==0.14',
     'six',  # Do not specify version: the last version of setuptools require six>=1.10.0
 ]
