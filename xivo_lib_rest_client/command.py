@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,10 +31,11 @@ class HTTPCommand(object):
     @staticmethod
     def raise_from_response(response):
         try:
-            msg = json.loads(response.text)['message']
-            response.reason = msg
-        finally:
-            response.raise_for_status()
+            response.reason = json.loads(response.text)['message']
+        except (ValueError, KeyError):
+            pass
+
+        response.raise_for_status()
 
 
 class RESTCommand(HTTPCommand):

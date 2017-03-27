@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-20155555 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,14 @@ class TestHTTPCommand(unittest.TestCase):
 
         self.assertRaises(ExpectedError, HTTPCommand.raise_from_response, response)
         assert_that(response.reason, equal_to('Expected reason'))
+
+    def test_raise_from_response_does_not_raise_keyerror_or_valueerror(self):
+        response = Mock(text='not a dict with message')
+
+        try:
+            HTTPCommand.raise_from_response(response)
+        except (KeyError, ValueError):
+            self.fail('KeyError or ValueError unexpectedly raised')
 
 
 class TestRESTCommand(unittest.TestCase):
