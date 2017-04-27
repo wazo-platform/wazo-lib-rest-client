@@ -52,6 +52,14 @@ class TestHTTPCommand(unittest.TestCase):
         except (KeyError, ValueError):
             self.fail('KeyError or ValueError unexpectedly raised')
 
+    def test_raise_from_response_does_not_raise_typeerror(self):
+        response = Mock(text=None)
+
+        try:
+            HTTPCommand.raise_from_response(response)
+        except (TypeError):
+            self.fail('TypeError unexpectedly raised')
+
 
 class TestRESTCommand(unittest.TestCase):
 

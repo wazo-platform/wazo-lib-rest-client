@@ -32,7 +32,7 @@ class HTTPCommand(object):
     def raise_from_response(response):
         try:
             response.reason = json.loads(response.text)['message']
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, TypeError):
             pass
 
         response.raise_for_status()
