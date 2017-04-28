@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,9 +71,9 @@ class BaseClient(object):
         except RuntimeError:
             logger.warning('No commands found')
 
-    def _add_command_to_client(self, extension):
-        command = extension.plugin(self)
-        setattr(self, extension.name, command)
+    def _add_command_to_client(self, extension_):
+        command = extension_.plugin(self)
+        setattr(self, extension_.name, command)
 
     def session(self):
         session = Session()
@@ -99,11 +99,12 @@ class BaseClient(object):
 
     def url(self, *fragments):
         base = '{scheme}://{host}:{port}{prefix}/{version}'.format(
-                scheme='https' if self._https else 'http',
-                host=self.host,
-                port=self.port,
-                prefix=self._prefix,
-                version=self._version)
+            scheme='https' if self._https else 'http',
+            host=self.host,
+            port=self.port,
+            prefix=self._prefix,
+            version=self._version
+        )
         if fragments:
             base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
 
