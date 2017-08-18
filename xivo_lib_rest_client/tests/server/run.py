@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 by Avencall
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import print_function
@@ -8,7 +8,7 @@ import os
 
 from datetime import timedelta
 from flask import Flask, send_from_directory
-from flask.ext.httpauth import HTTPDigestAuth
+from flask_httpauth import HTTPDigestAuth
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 
