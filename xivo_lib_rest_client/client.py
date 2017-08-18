@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 class BaseClient(object):
 
     namespace = None
+    _url_fmt_with_port = '{scheme}://{host}:{port}{prefix}/{version}'
+    _url_fmt_no_port = '{scheme}://{host}{prefix}/{version}'
 
     def __init__(self,
                  host,
@@ -98,7 +100,8 @@ class BaseClient(object):
         self._token_id = token
 
     def url(self, *fragments):
-        base = '{scheme}://{host}:{port}{prefix}/{version}'.format(
+        url_fmt = self._url_fmt_with_port if self.port else self._url_fmt_no_port
+        base = url_fmt.format(
             scheme='https' if self._https else 'http',
             host=self.host,
             port=self.port,
