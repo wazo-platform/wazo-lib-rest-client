@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 REQUIREMENTS = [
-    'requests==2.4.3',
+    'requests==2.12.4',
     'stevedore==1.17.1',
     'six',  # Do not specify version: the last version of setuptools require six>=1.10.0
 ]
