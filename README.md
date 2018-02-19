@@ -1,7 +1,7 @@
 xivo-lib-rest-client
 ====================
 
-[![Build Status](https://travis-ci.org/wazo-pbx/xivo-lib-rest-client.svg?branch=master)](https://travis-ci.org/wazo-pbx/xivo-lib-rest-client)
+[![Build Status](https://jenkins.wazo.community/buildStatus/icon?job=xivo-lib-rest-client)](https://jenkins.wazo.community/job/xivo-lib-rest-client)
 
 The base library used by Wazo's REST clients.
 
