@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -216,8 +216,58 @@ class TestBaseClient(unittest.TestCase):
 
         session = client.session()
 
-        assert_that(client._token_id, equal_to(token_id))
         assert_that(session.headers, has_entry('X-Auth-Token', token_id))
+
+    def test_set_token(self):
+        token_id = 'the-one-ring'
+        client = self.new_client()
+
+        client.set_token(token_id)
+
+        session = client.session()
+        assert_that(session.headers, has_entry('X-Auth-Token', token_id))
+
+    def test_tenant_param(self):
+        tenant_id = 'my-tenant'
+        client = self.new_client(tenant=tenant_id)
+
+        session = client.session()
+        assert_that(session.headers, has_entry('Wazo-Tenant', tenant_id))
+
+    def test_set_tenant(self):
+        tenant_id = 'my-tenant'
+        client = self.new_client()
+
+        client.set_tenant(tenant_id)
+
+        session = client.session()
+        assert_that(session.headers, has_entry('Wazo-Tenant', tenant_id))
+
+    def test_tenant(self):
+        tenant_id = 'my-tenant'
+        client = self.new_client()
+        client.set_tenant(tenant_id)
+
+        result = client.tenant()
+
+        assert_that(result, equal_to(tenant_id))
+
+    def test_default_tenant(self):
+        tenant1_id = 'my-tenant'
+        tenant2_id = 'my-tenant'
+        client = self.new_client()
+        client.set_default_tenant(tenant1_id)
+
+        result = client.tenant()
+
+        assert_that(result, equal_to(tenant1_id))
+
+        client.set_tenant(tenant2_id)
+
+        result = client.tenant()
+
+        # Then set_tenant takes priority over set_default_tenant
+        assert_that(result, equal_to(tenant2_id))
 
     def test_given_no_exception_when_is_server_reachable_then_true(self):
         session = Mock()

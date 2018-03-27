@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@ class BaseClient(object):
                  port,
                  version='',
                  token=None,
+                 tenant=None,
+                 default_tenant=None,
                  https=True,
                  timeout=10,
                  verify_certificate=True,
@@ -49,6 +51,8 @@ class BaseClient(object):
         self.timeout = timeout
         self._version = version
         self._token_id = token
+        self._tenant_id = tenant
+        self._default_tenant_id = default_tenant
         self._https = https
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
@@ -94,7 +98,19 @@ class BaseClient(object):
         if self._token_id:
             session.headers['X-Auth-Token'] = self._token_id
 
+        if self._tenant_id:
+            session.headers['Wazo-Tenant'] = self._tenant_id
+
         return session
+
+    def set_tenant(self, tenant):
+        self._tenant_id = tenant
+
+    def set_default_tenant(self, tenant):
+        self._default_tenant_id = tenant
+
+    def tenant(self):
+        return self._tenant_id or self._default_tenant_id
 
     def set_token(self, token):
         self._token_id = token
