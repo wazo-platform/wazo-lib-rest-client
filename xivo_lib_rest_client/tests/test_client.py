@@ -21,21 +21,30 @@ import requests
 import subprocess
 import unittest
 
-from hamcrest import assert_that
-from hamcrest import close_to
-from hamcrest import contains_string
-from hamcrest import equal_to
-from hamcrest import ends_with
-from hamcrest import has_entry
-from hamcrest import is_
-from mock import ANY
-from mock import Mock
-from mock import patch
-from requests.exceptions import HTTPError
-from requests.exceptions import RequestException
-from requests.exceptions import Timeout
+from hamcrest import (
+    assert_that,
+    close_to,
+    contains_string,
+    equal_to,
+    ends_with,
+    has_entry,
+    is_,
+)
+from mock import (
+    ANY,
+    Mock,
+    patch,
+)
+from requests.exceptions import (
+    HTTPError,
+    RequestException,
+    Timeout,
+)
 
-from ..client import BaseClient, logger
+from ..client import (
+    BaseClient,
+    logger,
+)
 
 
 class Client(BaseClient):
@@ -122,7 +131,7 @@ class TestLiveClient(unittest.TestCase):
 class TestBaseClient(unittest.TestCase):
 
     def new_client(self,
-                   host=None,
+                   host='localhost',
                    port=None,
                    version=None,
                    username=None,
