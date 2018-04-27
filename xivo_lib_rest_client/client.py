@@ -28,6 +28,12 @@ from stevedore import extension
 logger = logging.getLogger(__name__)
 
 
+class InvalidArgumentError(Exception):
+
+    def __init__(self, argument_name):
+        super(InvalidArgumentError, self).__init__('Invalid value for argument "{}"'.format(argument_name))
+
+
 class BaseClient(object):
 
     namespace = None
@@ -46,6 +52,9 @@ class BaseClient(object):
                  verify_certificate=True,
                  prefix=None,
                  **kwargs):
+        if not host:
+            raise InvalidArgumentError('host')
+
         self.host = host
         self.port = port
         self.timeout = timeout
