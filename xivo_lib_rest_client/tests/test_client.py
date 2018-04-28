@@ -4,7 +4,6 @@
 
 import os
 import time
-import requests
 import subprocess
 import unittest
 
@@ -22,6 +21,7 @@ from mock import (
     Mock,
     patch,
 )
+import requests
 from requests.exceptions import (
     HTTPError,
     RequestException,

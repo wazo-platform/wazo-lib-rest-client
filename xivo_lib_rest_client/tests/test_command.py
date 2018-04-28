@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
 
-from ..command import HTTPCommand, RESTCommand
 from hamcrest import assert_that
 from hamcrest import equal_to
 from mock import Mock, sentinel
+
+from ..command import HTTPCommand, RESTCommand
 
 
 class TestHTTPCommand(unittest.TestCase):
@@ -44,7 +45,7 @@ class TestHTTPCommand(unittest.TestCase):
 
         try:
             HTTPCommand.raise_from_response(response)
-        except (TypeError):
+        except TypeError:
             self.fail('TypeError unexpectedly raised')
 
 
