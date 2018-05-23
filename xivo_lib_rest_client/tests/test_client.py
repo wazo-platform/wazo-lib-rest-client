@@ -179,6 +179,26 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), contains_string('myhost:80/api/1.0'))
 
+    def test_given_no_port_then_url_do_not_contains_double_dot(self):
+        client = self.new_client(host='myhost', port=None, prefix='', version='')
+
+        assert_that(client.url(), contains_string('myhost'))
+
+    def test_given_no_version_then_prefix_do_not_end_with_slash(self):
+        client = self.new_client(host='myhost', port=80, prefix='api', version='')
+
+        assert_that(client.url(), contains_string('myhost:80/api'))
+
+    def test_given_no_version_and_no_prefix_then_port_do_not_end_with_slash(self):
+        client = self.new_client(host='myhost', port=80, prefix='', version='')
+
+        assert_that(client.url(), contains_string('myhost:80'))
+
+    def test_given_version_and_no_prefix_then_version_do_not_start_with_double_slash(self):
+        client = self.new_client(host='myhost', port=80, prefix='', version='0.1')
+
+        assert_that(client.url(), contains_string('myhost:80/0.1'))
+
     def test_given_resource_then_resource_name_is_in_url(self):
         client = self.new_client()
 
