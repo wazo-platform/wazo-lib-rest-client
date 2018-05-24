@@ -24,8 +24,7 @@ class InvalidArgumentError(Exception):
 class BaseClient(object):
 
     namespace = None
-    _url_fmt_with_port = '{scheme}://{host}:{port}{prefix}/{version}'
-    _url_fmt_no_port = '{scheme}://{host}{prefix}/{version}'
+    _url_fmt = '{scheme}://{host}{port}{prefix}{version}'
 
     def __init__(self,
                  host,
@@ -112,13 +111,12 @@ class BaseClient(object):
         self._token_id = token
 
     def url(self, *fragments):
-        url_fmt = self._url_fmt_with_port if self.port else self._url_fmt_no_port
-        base = url_fmt.format(
+        base = self._url_fmt.format(
             scheme='https' if self._https else 'http',
             host=self.host,
-            port=self.port,
+            port=':{}'.format(self.port) if self.port else '',
             prefix=self._prefix,
-            version=self._version
+            version='/{}'.format(self._version) if self._version else '',
         )
         if fragments:
             base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
