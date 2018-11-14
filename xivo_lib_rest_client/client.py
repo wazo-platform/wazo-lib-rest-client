@@ -12,6 +12,8 @@ from requests.packages.urllib3 import disable_warnings
 from six import text_type
 from stevedore import extension
 
+from .pubsub import Pubsub
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,6 +53,7 @@ class BaseClient(object):
         self._https = https
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
+        self.pubsub = Pubsub()
         if kwargs:
             logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
         self._load_plugins()
@@ -109,6 +112,7 @@ class BaseClient(object):
 
     def set_token(self, token):
         self._token_id = token
+        self.pubsub.publish('token_changed')
 
     def url(self, *fragments):
         base = self._url_fmt.format(
