@@ -7,7 +7,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 REQUIREMENTS = [
-    'requests==2.12.4',
+    'requests==2.20.0',
     'stevedore==1.17.1',
     'six',  # Do not specify version: the last version of setuptools require six>=1.10.0
 ]
