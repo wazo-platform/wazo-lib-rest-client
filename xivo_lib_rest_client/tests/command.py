@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
@@ -13,6 +12,7 @@ class HTTPCommandTestCase(unittest.TestCase):
     def setUp(self):
         self.client = Mock()
         self.client.timeout = sentinel.timeout
+        self.client.tenant = Mock(return_value=None)
         self.session = self.client.session.return_value
         self.session.headers = {}
         self.command = self.Command(self.client)
