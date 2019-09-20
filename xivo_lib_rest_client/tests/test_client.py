@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -103,6 +103,8 @@ class TestLiveClient(unittest.TestCase):
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
     def test_client_command_after_session_expiry(self):
+        assert_that(self._server.returncode, equal_to(None), 'server should be running')
+
         c = Client('localhost', 8000, 'auth/42',
                    username='username', password='password', https=False)
 
