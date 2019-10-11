@@ -1,7 +1,7 @@
-xivo-lib-rest-client
+wazo-lib-rest-client
 ====================
 
-[![Build Status](https://jenkins.wazo.community/buildStatus/icon?job=xivo-lib-rest-client)](https://jenkins.wazo.community/job/xivo-lib-rest-client)
+[![Build Status](https://jenkins.wazo.community/buildStatus/icon?job=wazo-lib-rest-client)](https://jenkins.wazo.community/job/wazo-lib-rest-client)
 
 The base library used by Wazo's REST clients.
 
@@ -12,7 +12,7 @@ Usage
 Create a new REST client:
 
 ```python
-from xivo_lib_rest_client import new_client_factory
+from wazo_lib_rest_client import new_client_factory
 
 port = 5433
 version = '1.2'
@@ -25,7 +25,7 @@ commands from the *my_application.commands* namespace.
 To add a new command, subclass the RESTCommand:
 
 ```python
-from xivo_lib_rest_client import RESTCommand
+from wazo_lib_rest_client import RESTCommand
 
 class FooCommand(RESTCommand):
 

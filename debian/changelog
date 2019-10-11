@@ -1,3 +1,9 @@
+wazo-lib-rest-client (19.15~20191011) wazo-dev-buster; urgency=medium
+
+  * Rename to wazo-lib-rest-client
+
+ -- Wazo Maintainers <dev+pkg@wazo.community>  Fri, 11 Oct 2019 15:22:32 -0400
+
 xivo-lib-rest-client (0.1) xivo-dev; urgency=low
 
   * Initial release.

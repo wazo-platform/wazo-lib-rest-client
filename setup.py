@@ -13,7 +13,7 @@ REQUIREMENTS = [
 ]
 
 setup(
-    name='xivo_lib_rest_client',
+    name='wazo_lib_rest_client',
     version='0.2',
 
     description='a simple library to instantiate REST clients',
@@ -28,7 +28,7 @@ setup(
 
     entry_points={
         'test_rest_client.commands': [
-            'example = xivo_lib_rest_client.example_cmd:ExampleCommand',
+            'example = wazo_lib_rest_client.example_cmd:ExampleCommand',
         ],
     }
 )

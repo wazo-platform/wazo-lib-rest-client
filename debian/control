@@ -1,7 +1,7 @@
-Source: xivo-lib-rest-client
+Source: wazo-lib-rest-client
 Section: python
 Priority: extra
-Maintainer: Wazo Maintainers <dev.wazo@gmail.com>
+Maintainer: Wazo Maintainers <dev@wazo.community>
 Build-Depends:
  debhelper (>= 9),
  dh-python,
@@ -11,24 +11,24 @@ Build-Depends:
  python3-setuptools
 Standards-Version: 3.9.6
 X-Python-Version: >= 2.7
-X-Python3-Version: >= 3.4
+X-Python3-Version: >= 3.7
 
-Package: xivo-lib-rest-client
+Package: wazo-lib-rest-client
 Architecture: all
 Depends:
  ${python:Depends},
  python-requests (>= 2.4.3),
- python-stevedore,
+ python-stevedore
 Description: Wazo PBX's REST client library - Python 2
  Wazo is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
 
-Package: xivo-lib-rest-client-python3
+Package: wazo-lib-rest-client-python3
 Architecture: all
 Depends:
  ${python3:Depends},
  python3-requests (>= 2.4.3),
- python3-stevedore,
+ python3-stevedore
 Description: Wazo PBX's REST client library - Python 3
  Wazo is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
