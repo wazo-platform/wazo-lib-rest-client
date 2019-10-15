@@ -157,7 +157,7 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), contains_string('https://'))
 
-    @patch('xivo_lib_rest_client.client.disable_warnings')
+    @patch('wazo_lib_rest_client.client.disable_warnings')
     def test_given_https_then_warnings_are_disabled(self, disable_warnings):
         client = self.new_client(https=True)
 
