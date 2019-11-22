@@ -10,9 +10,11 @@ from requests.exceptions import HTTPError
 class HTTPCommandTestCase(unittest.TestCase):
 
     def setUp(self):
+        base_url = self.Command.resource
         self.client = Mock()
         self.client.timeout = sentinel.timeout
         self.client.tenant = Mock(return_value=None)
+        self.client.url = Mock(return_value=base_url)
         self.session = self.client.session.return_value
         self.session.headers = {}
         self.command = self.Command(self.client)
@@ -24,7 +26,8 @@ class HTTPCommandTestCase(unittest.TestCase):
     def new_response(status_code, json=None, body=None):
         response = Mock()
         response.status_code = status_code
-        response.raise_for_status.side_effect = HTTPError()
+        if status_code >= 300:
+            response.raise_for_status.side_effect = HTTPError()
         if json is not None:
             response.json.return_value = json
         elif body is not None:
