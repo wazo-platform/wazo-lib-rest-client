@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
+import os
+import sys
 
 from functools import partial
 from requests import HTTPError
@@ -37,10 +39,12 @@ class BaseClient(object):
                  timeout=10,
                  verify_certificate=True,
                  prefix=None,
+                 user_agent='',
                  **kwargs):
         if not host:
             raise InvalidArgumentError('host')
-
+        if not user_agent:
+            user_agent = os.path.basename(sys.argv[0])
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -51,6 +55,7 @@ class BaseClient(object):
         self._https = https
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
+        self._user_agent = user_agent
         if kwargs:
             logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
         self._load_plugins()
@@ -95,6 +100,9 @@ class BaseClient(object):
 
         if self._tenant_id:
             session.headers['Wazo-Tenant'] = self._tenant_id
+
+        if self._user_agent:
+            session.headers['User-agent'] = self._user_agent
 
         return session
 
