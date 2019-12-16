@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -15,6 +15,9 @@ from six import text_type
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
+
+global PLUGINS_CACHE
+PLUGINS_CACHE = {}
 
 
 class InvalidArgumentError(Exception):
@@ -68,18 +71,23 @@ class BaseClient(object):
         return prefix
 
     def _load_plugins(self):
+        global PLUGINS_CACHE
+
         if not self.namespace:
             raise ValueError('You must redefine BaseClient.namespace')
 
-        extension_manager = extension.ExtensionManager(self.namespace)
-        try:
-            extension_manager.map(self._add_command_to_client)
-        except RuntimeError:
-            logger.warning('No commands found')
+        if self.namespace not in PLUGINS_CACHE:
+            PLUGINS_CACHE[self.namespace] = list(extension.ExtensionManager(
+                self.namespace
+            ))
 
-    def _add_command_to_client(self, extension_):
-        command = extension_.plugin(self)
-        setattr(self, extension_.name, command)
+        plugins = PLUGINS_CACHE[self.namespace]
+        if not plugins:
+            logger.warning('No commands found')
+            return
+
+        for ext in plugins:
+            setattr(self, ext.name, ext.plugin(self))
 
     def session(self):
         session = Session()
