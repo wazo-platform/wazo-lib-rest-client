@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -91,7 +91,6 @@ class BaseClient(object):
 
     def session(self):
         session = Session()
-        session.headers = {'Connection': 'close'}
 
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
