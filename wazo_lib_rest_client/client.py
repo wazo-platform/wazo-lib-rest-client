@@ -91,6 +91,7 @@ class BaseClient(object):
 
     def session(self):
         session = Session()
+        session.headers = {}
 
         if self.timeout is not None:
             session.request = partial(session.request, timeout=self.timeout)
