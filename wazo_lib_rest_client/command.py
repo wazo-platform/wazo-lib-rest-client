@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import abc
@@ -29,6 +29,8 @@ class RESTCommand(HTTPCommand):
 
     __metaclass__ = abc.ABCMeta
 
+    _headers = {'Accept': 'application/json'}
+
     @abc.abstractproperty
     def resource(self):
         return
@@ -37,3 +39,10 @@ class RESTCommand(HTTPCommand):
         super(RESTCommand, self).__init__(client)
         self.base_url = self._client.url(self.resource)
         self.timeout = self._client.timeout
+
+    def _get_headers(self, **kwargs):
+        headers = dict(self._headers)
+        tenant_uuid = kwargs.pop('tenant_uuid', None)
+        if tenant_uuid:
+            headers['Wazo-Tenant'] = tenant_uuid
+        return headers
