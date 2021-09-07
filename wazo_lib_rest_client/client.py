@@ -52,7 +52,6 @@ class BaseClient(object):
         self.timeout = timeout
         self._version = version
         self._token_id = token
-        self._tenant_id = tenant
         self._https = https
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
@@ -60,6 +59,8 @@ class BaseClient(object):
         if kwargs:
             logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
         self._load_plugins()
+
+        self.tenant_uuid = tenant
 
     def _build_prefix(self, prefix):
         if not prefix:
@@ -104,19 +105,21 @@ class BaseClient(object):
         if self._token_id:
             session.headers['X-Auth-Token'] = self._token_id
 
-        if self._tenant_id:
-            session.headers['Wazo-Tenant'] = self._tenant_id
+        if self.tenant_uuid:
+            session.headers['Wazo-Tenant'] = self.tenant_uuid
 
         if self._user_agent:
             session.headers['User-agent'] = self._user_agent
 
         return session
 
-    def set_tenant(self, tenant):
-        self._tenant_id = tenant
+    def set_tenant(self, tenant_uuid):
+        logger.warning('set_tenant() is deprecated. Please use tenant_uuid')
+        self.tenant_uuid = tenant_uuid
 
     def tenant(self):
-        return self._tenant_id
+        logger.warning('tenant() is deprecated. Please use tenant_uuid')
+        return self.tenant_uuid
 
     def set_token(self, token):
         self._token_id = token
