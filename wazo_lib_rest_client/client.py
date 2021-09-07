@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -37,7 +37,6 @@ class BaseClient(object):
                  version='',
                  token=None,
                  tenant=None,
-                 default_tenant=None,
                  https=True,
                  timeout=10,
                  verify_certificate=True,
@@ -54,7 +53,6 @@ class BaseClient(object):
         self._version = version
         self._token_id = token
         self._tenant_id = tenant
-        self._default_tenant_id = default_tenant
         self._https = https
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
@@ -117,11 +115,8 @@ class BaseClient(object):
     def set_tenant(self, tenant):
         self._tenant_id = tenant
 
-    def set_default_tenant(self, tenant):
-        self._default_tenant_id = tenant
-
     def tenant(self):
-        return self._tenant_id or self._default_tenant_id
+        return self._tenant_id
 
     def set_token(self, token):
         self._token_id = token
