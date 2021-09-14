@@ -42,6 +42,7 @@ class RESTCommand(HTTPCommand):
 
     def _get_headers(self, **kwargs):
         headers = dict(self._headers)
+        # The requests session will use self.tenant_uuid by default
         tenant_uuid = kwargs.pop('tenant_uuid', None)
         if tenant_uuid:
             headers['Wazo-Tenant'] = tenant_uuid
