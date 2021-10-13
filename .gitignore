@@ -54,3 +54,4 @@ docs/_build/
 target/
 pep8.txt
 pylint.txt
+pycodestyle.txt

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -269,23 +269,6 @@ class TestBaseClient(unittest.TestCase):
         result = client.tenant()
 
         assert_that(result, equal_to(tenant_id))
-
-    def test_default_tenant(self):
-        tenant1_id = 'my-tenant'
-        tenant2_id = 'my-tenant'
-        client = self.new_client()
-        client.set_default_tenant(tenant1_id)
-
-        result = client.tenant()
-
-        assert_that(result, equal_to(tenant1_id))
-
-        client.set_tenant(tenant2_id)
-
-        result = client.tenant()
-
-        # Then set_tenant takes priority over set_default_tenant
-        assert_that(result, equal_to(tenant2_id))
 
     def test_given_no_exception_when_is_server_reachable_then_true(self):
         session = Mock()
