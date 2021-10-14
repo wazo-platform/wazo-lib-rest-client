@@ -45,5 +45,5 @@ class RESTCommand(HTTPCommand):
         # The requests session will use self.tenant_uuid by default
         tenant_uuid = kwargs.pop('tenant_uuid', None)
         if tenant_uuid:
-            headers['Wazo-Tenant'] = tenant_uuid
+            headers['Wazo-Tenant'] = str(tenant_uuid)
         return headers
