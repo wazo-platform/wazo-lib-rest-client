@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
+#!/usr/bin/env python3
+# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import setup
@@ -9,7 +8,6 @@ from setuptools import find_packages
 REQUIREMENTS = [
     'requests==2.21.0',
     'stevedore==1.29.0',
-    'six',  # Do not specify version: the last version of setuptools require six>=1.10.0
 ]
 
 setup(

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -11,7 +10,6 @@ from requests import HTTPError
 from requests import RequestException
 from requests import Session
 from requests.packages.urllib3 import disable_warnings
-from six import text_type
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
@@ -23,10 +21,10 @@ PLUGINS_CACHE = {}
 class InvalidArgumentError(Exception):
 
     def __init__(self, argument_name):
-        super(InvalidArgumentError, self).__init__('Invalid value for argument "{}"'.format(argument_name))
+        super().__init__(f'Invalid value for argument "{argument_name}"')
 
 
-class BaseClient(object):
+class BaseClient:
 
     namespace = None
     _url_fmt = '{scheme}://{host}{port}{prefix}{version}'
@@ -133,7 +131,7 @@ class BaseClient(object):
             version='/{}'.format(self._version) if self._version else '',
         )
         if fragments:
-            base = "{base}/{path}".format(base=base, path='/'.join(text_type(fragment) for fragment in fragments))
+            base = "{base}/{path}".format(base=base, path='/'.join(str(fragment) for fragment in fragments))
 
         return base
 

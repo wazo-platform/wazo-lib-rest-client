@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -16,7 +15,7 @@ from hamcrest import (
     has_entry,
     is_,
 )
-from mock import (
+from unittest.mock import (
     ANY,
     Mock,
     patch,
@@ -38,26 +37,30 @@ class Client(BaseClient):
 
     namespace = 'test_rest_client.commands'
 
-    def __init__(self,
-                 host='localhost',
-                 port=1234,
-                 version='1.1',
-                 username=None,
-                 password=None,
-                 https=False,
-                 verify_certificate=False,
-                 **kwargs):
-        super(Client, self).__init__(host=host,
-                                     port=port,
-                                     version=version,
-                                     https=https,
-                                     verify_certificate=verify_certificate,
-                                     **kwargs)
+    def __init__(
+        self,
+        host='localhost',
+        port=1234,
+        version='1.1',
+        username=None,
+        password=None,
+        https=False,
+        verify_certificate=False,
+        **kwargs
+    ):
+        super().__init__(
+            host=host,
+            port=port,
+            version=version,
+            https=https,
+            verify_certificate=verify_certificate,
+            **kwargs
+        )
         self.username = username
         self.password = password
 
     def session(self):
-        session = super(Client, self).session()
+        session = super().session()
         if self.username and self.password:
             session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
         return session
@@ -68,7 +71,7 @@ class MockSessionClient(BaseClient):
     namespace = 'some-namespace'
 
     def __init__(self, session):
-        super(MockSessionClient, self).__init__('localhost', 1234)
+        super().__init__('localhost', 1234)
         self._session = session
 
     def session(self):
@@ -224,9 +227,9 @@ class TestBaseClient(unittest.TestCase):
         except Timeout:
             assert_that(time.time() - start, close_to(1.0, 0.9))
         except KeyboardInterrupt:
-            self.fail('Should have timedout after 1 second')
+            self.fail('Should have timeout after 1 second')
         else:
-            self.fail('Should have timedout after 1 second')
+            self.fail('Should have timeout after 1 second')
 
     def test_token(self):
         token_id = 'the-one-ring'
