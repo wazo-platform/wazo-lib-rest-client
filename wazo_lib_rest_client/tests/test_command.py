@@ -1,24 +1,24 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
+from unittest.mock import Mock, sentinel
 
 from hamcrest import assert_that
 from hamcrest import equal_to
-from mock import Mock, sentinel
 
 from ..command import HTTPCommand, RESTCommand
 
 
 class TestHTTPCommand(unittest.TestCase):
-
     def test_raise_from_response_no_message(self):
         class ExpectedError(Exception):
             pass
 
-        response = Mock(text='not a dict with message',
-                        raise_for_status=Mock(side_effect=ExpectedError))
+        response = Mock(
+            text='not a dict with message',
+            raise_for_status=Mock(side_effect=ExpectedError),
+        )
 
         self.assertRaises(ExpectedError, HTTPCommand.raise_from_response, response)
 
@@ -26,8 +26,10 @@ class TestHTTPCommand(unittest.TestCase):
         class ExpectedError(Exception):
             pass
 
-        response = Mock(text='{"message": "Expected reason"}',
-                        raise_for_status=Mock(side_effect=ExpectedError))
+        response = Mock(
+            text='{"message": "Expected reason"}',
+            raise_for_status=Mock(side_effect=ExpectedError),
+        )
 
         self.assertRaises(ExpectedError, HTTPCommand.raise_from_response, response)
         assert_that(response.reason, equal_to('Expected reason'))
@@ -50,7 +52,6 @@ class TestHTTPCommand(unittest.TestCase):
 
 
 class TestRESTCommand(unittest.TestCase):
-
     def setUp(self):
         class TestCommand(RESTCommand):
             resource = 'test'
@@ -82,5 +83,8 @@ class TestRESTCommand(unittest.TestCase):
 
         c = self.TestCommand(client)
 
-        expected_headers = {'Accept': 'application/json', 'Wazo-Tenant': 'custom-tenant'}
+        expected_headers = {
+            'Accept': 'application/json',
+            'Wazo-Tenant': 'custom-tenant',
+        }
         assert_that(c._get_headers(**kwargs), equal_to(expected_headers))

@@ -1,5 +1,4 @@
-mock
-nose
+pytest
 pyhamcrest
 flask
 flask-httpauth

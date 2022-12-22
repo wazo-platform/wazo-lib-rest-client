@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import abc
 import json
 
 
-class HTTPCommand(object):
-
+class HTTPCommand:
     def __init__(self, client):
         self._client = client
 
@@ -36,7 +34,7 @@ class RESTCommand(HTTPCommand):
         return
 
     def __init__(self, client):
-        super(RESTCommand, self).__init__(client)
+        super().__init__(client)
         self.base_url = self._client.url(self.resource)
         self.timeout = self._client.timeout
 

@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-import unittest
-from mock import Mock, sentinel
+from unittest import TestCase
+from unittest.mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
 
-class HTTPCommandTestCase(unittest.TestCase):
-
+class HTTPCommandTestCase(TestCase):
     def setUp(self):
         base_url = self.Command.resource
         self.client = Mock()
@@ -55,5 +53,5 @@ class RESTCommandTestCase(HTTPCommandTestCase):
     version = '1.0'
 
     def setUp(self):
-        super(RESTCommandTestCase, self).setUp()
+        super().setUp()
         self.base_url = self.command.base_url

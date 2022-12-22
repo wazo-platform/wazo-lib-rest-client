@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -16,7 +15,7 @@ from hamcrest import (
     has_entry,
     is_,
 )
-from mock import (
+from unittest.mock import (
     ANY,
     Mock,
     patch,
@@ -38,26 +37,30 @@ class Client(BaseClient):
 
     namespace = 'test_rest_client.commands'
 
-    def __init__(self,
-                 host='localhost',
-                 port=1234,
-                 version='1.1',
-                 username=None,
-                 password=None,
-                 https=False,
-                 verify_certificate=False,
-                 **kwargs):
-        super(Client, self).__init__(host=host,
-                                     port=port,
-                                     version=version,
-                                     https=https,
-                                     verify_certificate=verify_certificate,
-                                     **kwargs)
+    def __init__(
+        self,
+        host='localhost',
+        port=1234,
+        version='1.1',
+        username=None,
+        password=None,
+        https=False,
+        verify_certificate=False,
+        **kwargs
+    ):
+        super().__init__(
+            host=host,
+            port=port,
+            version=version,
+            https=https,
+            verify_certificate=verify_certificate,
+            **kwargs
+        )
         self.username = username
         self.password = password
 
     def session(self):
-        session = super(Client, self).session()
+        session = super().session()
         if self.username and self.password:
             session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
         return session
@@ -68,7 +71,7 @@ class MockSessionClient(BaseClient):
     namespace = 'some-namespace'
 
     def __init__(self, session):
-        super(MockSessionClient, self).__init__('localhost', 1234)
+        super().__init__('localhost', 1234)
         self._session = session
 
     def session(self):
@@ -76,7 +79,6 @@ class MockSessionClient(BaseClient):
 
 
 class TestLiveClient(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         os.chdir(os.path.dirname(__file__))
@@ -105,8 +107,14 @@ class TestLiveClient(unittest.TestCase):
     def test_client_command_after_session_expiry(self):
         assert_that(self._server.returncode, equal_to(None), 'server should be running')
 
-        c = Client('localhost', 8000, 'auth/42',
-                   username='username', password='password', https=False)
+        c = Client(
+            'localhost',
+            8000,
+            'auth/42',
+            username='username',
+            password='password',
+            https=False,
+        )
 
         result = c.example()
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
@@ -118,28 +126,31 @@ class TestLiveClient(unittest.TestCase):
 
 
 class TestBaseClient(unittest.TestCase):
-
-    def new_client(self,
-                   host='localhost',
-                   port=None,
-                   version=None,
-                   username=None,
-                   password=None,
-                   https=None,
-                   timeout=None,
-                   verify_certificate=None,
-                   token=None,
-                   **kwargs):
-        return Client(host=host,
-                      port=port,
-                      version=version,
-                      username=username,
-                      password=password,
-                      https=https,
-                      timeout=timeout,
-                      verify_certificate=verify_certificate,
-                      token=token,
-                      **kwargs)
+    def new_client(
+        self,
+        host='localhost',
+        port=None,
+        version=None,
+        username=None,
+        password=None,
+        https=None,
+        timeout=None,
+        verify_certificate=None,
+        token=None,
+        **kwargs
+    ):
+        return Client(
+            host=host,
+            port=port,
+            version=version,
+            username=username,
+            password=password,
+            https=https,
+            timeout=timeout,
+            verify_certificate=verify_certificate,
+            token=token,
+            **kwargs
+        )
 
     @patch.object(logger, 'debug')
     def test_that_extra_kwargs_are_ignored(self, logger_debug):
@@ -166,8 +177,7 @@ class TestBaseClient(unittest.TestCase):
         disable_warnings.assert_called_once_with()
 
     def test_given_connection_parameters_then_url_built(self):
-        client = self.new_client(host='myhost', port=1234, version='1.234',
-                                 https=True)
+        client = self.new_client(host='myhost', port=1234, version='1.234', https=True)
 
         assert_that(client.url(), equal_to('https://myhost:1234/1.234'))
 
@@ -196,7 +206,9 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), contains_string('myhost:80'))
 
-    def test_given_version_and_no_prefix_then_version_do_not_start_with_double_slash(self):
+    def test_given_version_and_no_prefix_then_version_do_not_start_with_double_slash(
+        self,
+    ):
         client = self.new_client(host='myhost', port=80, prefix='', version='0.1')
 
         assert_that(client.url(), contains_string('myhost:80/0.1'))
@@ -224,9 +236,9 @@ class TestBaseClient(unittest.TestCase):
         except Timeout:
             assert_that(time.time() - start, close_to(1.0, 0.9))
         except KeyboardInterrupt:
-            self.fail('Should have timedout after 1 second')
+            self.fail('Should have timeout after 1 second')
         else:
-            self.fail('Should have timedout after 1 second')
+            self.fail('Should have timeout after 1 second')
 
     def test_token(self):
         token_id = 'the-one-ring'
