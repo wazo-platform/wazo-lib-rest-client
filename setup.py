@@ -13,20 +13,15 @@ REQUIREMENTS = [
 setup(
     name='wazo_lib_rest_client',
     version='0.2',
-
     description='a simple library to instantiate REST clients',
-
     author='Wazo Authors',
     author_email='dev.wazo@gmail.com',
-
     url='http://wazo.community',
-
     packages=find_packages(),
     install_requires=REQUIREMENTS,
-
     entry_points={
         'test_rest_client.commands': [
             'example = wazo_lib_rest_client.example_cmd:ExampleCommand',
         ],
-    }
+    },
 )

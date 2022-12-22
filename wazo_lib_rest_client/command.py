@@ -6,7 +6,6 @@ import json
 
 
 class HTTPCommand:
-
     def __init__(self, client):
         self._client = client
 

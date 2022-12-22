@@ -19,7 +19,6 @@ PLUGINS_CACHE = {}
 
 
 class InvalidArgumentError(Exception):
-
     def __init__(self, argument_name):
         super().__init__(f'Invalid value for argument "{argument_name}"')
 
@@ -29,18 +28,20 @@ class BaseClient:
     namespace = None
     _url_fmt = '{scheme}://{host}{port}{prefix}{version}'
 
-    def __init__(self,
-                 host,
-                 port,
-                 version='',
-                 token=None,
-                 tenant=None,
-                 https=True,
-                 timeout=10,
-                 verify_certificate=True,
-                 prefix=None,
-                 user_agent='',
-                 **kwargs):
+    def __init__(
+        self,
+        host,
+        port,
+        version='',
+        token=None,
+        tenant=None,
+        https=True,
+        timeout=10,
+        verify_certificate=True,
+        prefix=None,
+        user_agent='',
+        **kwargs,
+    ):
         if not host:
             raise InvalidArgumentError('host')
         if not user_agent:
@@ -55,7 +56,11 @@ class BaseClient:
         self._prefix = self._build_prefix(prefix)
         self._user_agent = user_agent
         if kwargs:
-            logger.debug('%s received unexpected arguments: %s', self.__class__.__name__, list(kwargs.keys()))
+            logger.debug(
+                '%s received unexpected arguments: %s',
+                self.__class__.__name__,
+                list(kwargs.keys()),
+            )
         self._load_plugins()
 
         self.tenant_uuid = tenant
@@ -74,9 +79,9 @@ class BaseClient:
             raise ValueError('You must redefine BaseClient.namespace')
 
         if self.namespace not in PLUGINS_CACHE:
-            PLUGINS_CACHE[self.namespace] = list(extension.ExtensionManager(
-                self.namespace
-            ))
+            PLUGINS_CACHE[self.namespace] = list(
+                extension.ExtensionManager(self.namespace)
+            )
 
         plugins = PLUGINS_CACHE[self.namespace]
         if not plugins:
@@ -131,7 +136,9 @@ class BaseClient:
             version='/{}'.format(self._version) if self._version else '',
         )
         if fragments:
-            base = "{base}/{path}".format(base=base, path='/'.join(str(fragment) for fragment in fragments))
+            base = "{base}/{path}".format(
+                base=base, path='/'.join(str(fragment) for fragment in fragments)
+            )
 
         return base
 

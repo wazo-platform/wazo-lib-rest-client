@@ -1,4 +1,4 @@
-nose
+pytest
 pyhamcrest
 flask
 flask-httpauth

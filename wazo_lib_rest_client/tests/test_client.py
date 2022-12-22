@@ -79,7 +79,6 @@ class MockSessionClient(BaseClient):
 
 
 class TestLiveClient(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         os.chdir(os.path.dirname(__file__))
@@ -108,8 +107,14 @@ class TestLiveClient(unittest.TestCase):
     def test_client_command_after_session_expiry(self):
         assert_that(self._server.returncode, equal_to(None), 'server should be running')
 
-        c = Client('localhost', 8000, 'auth/42',
-                   username='username', password='password', https=False)
+        c = Client(
+            'localhost',
+            8000,
+            'auth/42',
+            username='username',
+            password='password',
+            https=False,
+        )
 
         result = c.example()
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
@@ -121,28 +126,31 @@ class TestLiveClient(unittest.TestCase):
 
 
 class TestBaseClient(unittest.TestCase):
-
-    def new_client(self,
-                   host='localhost',
-                   port=None,
-                   version=None,
-                   username=None,
-                   password=None,
-                   https=None,
-                   timeout=None,
-                   verify_certificate=None,
-                   token=None,
-                   **kwargs):
-        return Client(host=host,
-                      port=port,
-                      version=version,
-                      username=username,
-                      password=password,
-                      https=https,
-                      timeout=timeout,
-                      verify_certificate=verify_certificate,
-                      token=token,
-                      **kwargs)
+    def new_client(
+        self,
+        host='localhost',
+        port=None,
+        version=None,
+        username=None,
+        password=None,
+        https=None,
+        timeout=None,
+        verify_certificate=None,
+        token=None,
+        **kwargs
+    ):
+        return Client(
+            host=host,
+            port=port,
+            version=version,
+            username=username,
+            password=password,
+            https=https,
+            timeout=timeout,
+            verify_certificate=verify_certificate,
+            token=token,
+            **kwargs
+        )
 
     @patch.object(logger, 'debug')
     def test_that_extra_kwargs_are_ignored(self, logger_debug):
@@ -169,8 +177,7 @@ class TestBaseClient(unittest.TestCase):
         disable_warnings.assert_called_once_with()
 
     def test_given_connection_parameters_then_url_built(self):
-        client = self.new_client(host='myhost', port=1234, version='1.234',
-                                 https=True)
+        client = self.new_client(host='myhost', port=1234, version='1.234', https=True)
 
         assert_that(client.url(), equal_to('https://myhost:1234/1.234'))
 
@@ -199,7 +206,9 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.url(), contains_string('myhost:80'))
 
-    def test_given_version_and_no_prefix_then_version_do_not_start_with_double_slash(self):
+    def test_given_version_and_no_prefix_then_version_do_not_start_with_double_slash(
+        self,
+    ):
         client = self.new_client(host='myhost', port=80, prefix='', version='0.1')
 
         assert_that(client.url(), contains_string('myhost:80/0.1'))

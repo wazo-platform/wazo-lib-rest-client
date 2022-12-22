@@ -7,7 +7,6 @@ from requests.exceptions import HTTPError
 
 
 class HTTPCommandTestCase(TestCase):
-
     def setUp(self):
         base_url = self.Command.resource
         self.client = Mock()
