@@ -131,9 +131,9 @@ class BaseClient:
         base = self._url_fmt.format(
             scheme='https' if self._https else 'http',
             host=self.host,
-            port=':{}'.format(self.port) if self.port else '',
+            port=f':{self.port}' if self.port else '',
             prefix=self._prefix,
-            version='/{}'.format(self._version) if self._version else '',
+            version=f'/{self._version}' if self._version else '',
         )
         if fragments:
             base = "{base}/{path}".format(
