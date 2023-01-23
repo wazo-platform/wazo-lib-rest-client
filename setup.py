@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# Copyright 2015-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import setup
 from setuptools import find_packages
 
 REQUIREMENTS = [
-    'requests==2.21.0',
-    'stevedore==1.29.0',
+    'requests==2.25.1',
+    'stevedore==3.2.2',
 ]
 
 setup(
