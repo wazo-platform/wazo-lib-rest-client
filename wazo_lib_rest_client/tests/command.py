@@ -1,13 +1,18 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 from unittest import TestCase
 from unittest.mock import Mock, sentinel
 from requests.exceptions import HTTPError
 
+from wazo_lib_rest_client import RESTCommand
+
 
 class HTTPCommandTestCase(TestCase):
-    def setUp(self):
+    Command: type[RESTCommand]
+
+    def setUp(self) -> None:
         base_url = self.Command.resource
         self.client = Mock()
         self.client.timeout = sentinel.timeout
@@ -52,6 +57,6 @@ class RESTCommandTestCase(HTTPCommandTestCase):
     port = 9486
     version = '1.0'
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.base_url = self.command.base_url
