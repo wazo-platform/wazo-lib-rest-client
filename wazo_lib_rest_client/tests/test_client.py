@@ -1,5 +1,6 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 import os
 import time
@@ -21,6 +22,7 @@ from unittest.mock import (
     patch,
 )
 import requests
+from requests import Session
 from requests.exceptions import (
     HTTPError,
     RequestException,
@@ -31,11 +33,13 @@ from ..client import (
     BaseClient,
     logger,
 )
+from ..example_cmd import ExampleCommand
 
 
 class Client(BaseClient):
 
     namespace = 'test_rest_client.commands'
+    example: ExampleCommand
 
     def __init__(
         self,
@@ -46,7 +50,7 @@ class Client(BaseClient):
         password=None,
         https=False,
         verify_certificate=False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             host=host,
@@ -54,12 +58,12 @@ class Client(BaseClient):
             version=version,
             https=https,
             verify_certificate=verify_certificate,
-            **kwargs
+            **kwargs,
         )
         self.username = username
         self.password = password
 
-    def session(self):
+    def session(self) -> Session:
         session = super().session()
         if self.username and self.password:
             session.auth = requests.auth.HTTPDigestAuth(self.username, self.password)
@@ -70,15 +74,17 @@ class MockSessionClient(BaseClient):
 
     namespace = 'some-namespace'
 
-    def __init__(self, session):
+    def __init__(self, session: Session) -> None:
         super().__init__('localhost', 1234)
         self._session = session
 
-    def session(self):
+    def session(self) -> Session:
         return self._session
 
 
 class TestLiveClient(unittest.TestCase):
+    _server: subprocess.Popen
+
     @classmethod
     def setUpClass(cls):
         os.chdir(os.path.dirname(__file__))
@@ -137,7 +143,7 @@ class TestBaseClient(unittest.TestCase):
         timeout=None,
         verify_certificate=None,
         token=None,
-        **kwargs
+        **kwargs,
     ):
         return Client(
             host=host,
@@ -149,7 +155,7 @@ class TestBaseClient(unittest.TestCase):
             timeout=timeout,
             verify_certificate=verify_certificate,
             token=token,
-            **kwargs
+            **kwargs,
         )
 
     @patch.object(logger, 'debug')
