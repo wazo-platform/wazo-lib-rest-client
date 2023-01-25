@@ -1,10 +1,11 @@
-# Copyright 2016-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 import os
 
 from datetime import timedelta
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, Response
 from flask_httpauth import HTTPDigestAuth
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -19,18 +20,18 @@ auth = HTTPDigestAuth()
 
 
 @auth.get_password
-def get_password(username):
+def get_password(username: str) -> str | None:
     return USERS.get(username)
 
 
-@app.route('/auth/<path:path>')
+@app.route('/auth/<path:path>')  # type: ignore[no-redef]
 @auth.login_required
-def auth(path):
+def auth(path: str) -> Response:
     return send_from_directory(ROOT, path)
 
 
 @app.route('/<path:path>')
-def root(path):
+def root(path: str) -> Response:
     print(path)
     return send_from_directory(ROOT, path)
 
