@@ -1,47 +1,48 @@
-# Copyright 2014-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 import logging
 import os
 import sys
 
 from functools import partial
-from requests import HTTPError
-from requests import RequestException
-from requests import Session
+from typing import Any
+
+from requests import HTTPError, RequestException, Session
 from requests.packages.urllib3 import disable_warnings
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
 
 global PLUGINS_CACHE
-PLUGINS_CACHE = {}
+PLUGINS_CACHE: dict[str, list[extension.Extension]] = {}
 
 
 class InvalidArgumentError(Exception):
-    def __init__(self, argument_name):
+    def __init__(self, argument_name: str) -> None:
         super().__init__(f'Invalid value for argument "{argument_name}"')
 
 
 class BaseClient:
 
-    namespace = None
+    namespace: str | None = None
     _url_fmt = '{scheme}://{host}{port}{prefix}{version}'
 
     def __init__(
         self,
-        host,
-        port,
-        version='',
-        token=None,
-        tenant=None,
-        https=True,
-        timeout=10,
-        verify_certificate=True,
-        prefix=None,
-        user_agent='',
-        **kwargs,
-    ):
+        host: str,
+        port: int,
+        version: str = '',
+        token: str | None = None,
+        tenant: str | None = None,
+        https: bool = True,
+        timeout: int = 10,
+        verify_certificate: bool = True,
+        prefix: str | None = None,
+        user_agent: str = '',
+        **kwargs: Any,
+    ) -> None:
         if not host:
             raise InvalidArgumentError('host')
         if not user_agent:
@@ -65,14 +66,14 @@ class BaseClient:
 
         self.tenant_uuid = tenant
 
-    def _build_prefix(self, prefix):
+    def _build_prefix(self, prefix: str | None) -> str:
         if not prefix:
             return ''
         if not prefix.startswith('/'):
             prefix = '/' + prefix
         return prefix
 
-    def _load_plugins(self):
+    def _load_plugins(self) -> None:
         global PLUGINS_CACHE
 
         if not self.namespace:
@@ -91,12 +92,14 @@ class BaseClient:
         for ext in plugins:
             setattr(self, ext.name, ext.plugin(self))
 
-    def session(self):
+    def session(self) -> Session:
         session = Session()
         session.headers = {'Connection': 'close'}
 
         if self.timeout is not None:
-            session.request = partial(session.request, timeout=self.timeout)
+            session.request = partial(  # type: ignore[assignment]
+                session.request, timeout=self.timeout
+            )
 
         if self._https:
             if not self._verify_certificate:
@@ -116,18 +119,18 @@ class BaseClient:
 
         return session
 
-    def set_tenant(self, tenant_uuid):
+    def set_tenant(self, tenant_uuid: str) -> None:
         logger.warning('set_tenant() is deprecated. Please use tenant_uuid')
         self.tenant_uuid = tenant_uuid
 
-    def tenant(self):
+    def tenant(self) -> str | None:
         logger.warning('tenant() is deprecated. Please use tenant_uuid')
         return self.tenant_uuid
 
-    def set_token(self, token):
+    def set_token(self, token: str) -> None:
         self._token_id = token
 
-    def url(self, *fragments):
+    def url(self, *fragments: str) -> str:
         base = self._url_fmt.format(
             scheme='https' if self._https else 'http',
             host=self.host,
@@ -136,13 +139,11 @@ class BaseClient:
             version=f'/{self._version}' if self._version else '',
         )
         if fragments:
-            base = "{base}/{path}".format(
-                base=base, path='/'.join(str(fragment) for fragment in fragments)
-            )
-
+            path = '/'.join(str(fragment) for fragment in fragments)
+            base = f"{base}/{path}"
         return base
 
-    def is_server_reachable(self):
+    def is_server_reachable(self) -> bool:
         try:
             self.session().head(self.url())
             return True
