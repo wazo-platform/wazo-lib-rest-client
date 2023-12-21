@@ -2,8 +2,7 @@
 # Copyright 2015-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from setuptools import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 REQUIREMENTS = [
     'requests==2.25.1',

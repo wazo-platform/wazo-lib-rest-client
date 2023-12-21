@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import os
-
 from datetime import timedelta
-from flask import Flask, send_from_directory, Response
+
+from flask import Flask, Response, send_from_directory
 from flask_httpauth import HTTPDigestAuth
 
 ROOT = os.path.dirname(os.path.realpath(__file__))

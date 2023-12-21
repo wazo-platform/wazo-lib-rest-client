@@ -5,7 +5,7 @@ from __future__ import annotations
 import abc
 import json
 
-from requests import Session, Response
+from requests import Response, Session
 
 from wazo_lib_rest_client.client import BaseClient
 

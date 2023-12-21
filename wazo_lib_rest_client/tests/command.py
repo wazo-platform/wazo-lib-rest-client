@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from unittest import TestCase
 from unittest.mock import Mock, sentinel
+
 from requests.exceptions import HTTPError
 
 from wazo_lib_rest_client import RESTCommand
