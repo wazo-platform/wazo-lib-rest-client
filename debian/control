@@ -14,7 +14,7 @@ Package: wazo-lib-rest-client-python3
 Architecture: all
 Depends:
  ${python3:Depends},
- python3-requests (>= 2.4.3),
+ python3-requests,
  python3-stevedore
 Description: Wazo PBX's REST client library - Python 3
  Wazo is a system based on a powerful IPBX, to bring an easy to
