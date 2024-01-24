@@ -1,38 +1,27 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 import os
-import time
 import subprocess
+import time
 import unittest
+from unittest.mock import ANY, Mock, patch
 
+import requests
 from hamcrest import (
     assert_that,
     close_to,
     contains_string,
-    equal_to,
     ends_with,
+    equal_to,
     has_entry,
     is_,
 )
-from unittest.mock import (
-    ANY,
-    Mock,
-    patch,
-)
-import requests
 from requests import Session
-from requests.exceptions import (
-    HTTPError,
-    RequestException,
-    Timeout,
-)
+from requests.exceptions import HTTPError, RequestException, Timeout
 
-from ..client import (
-    BaseClient,
-    logger,
-)
+from ..client import BaseClient, logger
 from ..example_cmd import ExampleCommand
 
 

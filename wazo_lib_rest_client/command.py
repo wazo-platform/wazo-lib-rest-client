@@ -1,11 +1,11 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 import abc
 import json
 
-from requests import Session, Response
+from requests import Response, Session
 
 from wazo_lib_rest_client.client import BaseClient
 
