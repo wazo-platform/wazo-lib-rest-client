@@ -1,11 +1,11 @@
-# Copyright 2016-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 import os
-
 from datetime import timedelta
-from flask import Flask, send_from_directory, Response
+
+from flask import Flask, Response, send_from_directory
 from flask_httpauth import HTTPDigestAuth
 
 ROOT = os.path.dirname(os.path.realpath(__file__))

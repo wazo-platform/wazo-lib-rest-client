@@ -1,11 +1,10 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 import logging
 import os
 import sys
-
 from functools import partial
 from typing import Any
 

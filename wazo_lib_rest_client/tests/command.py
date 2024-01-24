@@ -1,9 +1,10 @@
-# Copyright 2014-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 from unittest import TestCase
 from unittest.mock import Mock, sentinel
+
 from requests.exceptions import HTTPError
 
 from wazo_lib_rest_client import RESTCommand
