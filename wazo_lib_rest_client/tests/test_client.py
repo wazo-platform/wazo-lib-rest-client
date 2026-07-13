@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import os
 import subprocess
+import threading
 import time
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import ANY, Mock, patch
 
 import requests
@@ -18,6 +20,7 @@ from hamcrest import (
     equal_to,
     has_entry,
     is_,
+    is_not,
 )
 from requests import Session
 from requests.exceptions import HTTPError, RequestException, Timeout
@@ -69,6 +72,7 @@ class MockSessionClient(BaseClient):
         self._session = session
 
     def session(self) -> Session:
+        assert self._session is not None
         return self._session
 
 
@@ -117,12 +121,8 @@ class TestLiveClient(unittest.TestCase):
 
         time.sleep(2)
 
-        # The client now keeps a persistent session, so its cookie jar
-        # survives across calls. This test's server stores its digest-auth
-        # nonce in a Flask session cookie that expires after 1s; resending
-        # the stale cookie breaks the re-auth handshake. Clearing the jar
-        # reproduces the original "fresh session per call" precondition so we
-        # still exercise recovery from server-side auth-session expiry.
+        # Clear the persistent session's cookie jar so the expired digest-auth
+        # nonce cookie isn't resent, letting the client re-authenticate.
         c.session().cookies.clear()
 
         result = c.example()
@@ -379,3 +379,102 @@ class TestBaseClient(unittest.TestCase):
         result = client.is_server_reachable()
 
         assert_that(result, is_(False))
+
+
+class ConnectionTrackingHandler(BaseHTTPRequestHandler):
+    # HTTP/1.1 keeps connections alive by default, which is what lets us
+    # observe real connection reuse from the client.
+    protocol_version = 'HTTP/1.1'
+
+    def do_GET(self) -> None:
+        requested_close = self.headers.get('Connection', '').lower() == 'close'
+        body = b'{"foo": "bar"}'
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
+        # The client's source port identifies the underlying TCP connection: a
+        # reused (kept-alive) connection keeps the same port across requests,
+        # while a fresh connection gets a new ephemeral port.
+        self.send_header('X-Client-Port', str(self.client_address[1]))
+        # Echo the connection-management request headers back for assertions.
+        self.send_header('X-Seen-Connection', self.headers.get('Connection', ''))
+        self.send_header('X-Seen-Keep-Alive', self.headers.get('Keep-Alive', ''))
+        # Reflect the close decision in the response (as a real server does) so
+        # the client discards the socket instead of pooling a dead connection.
+        if requested_close:
+            self.close_connection = True
+            self.send_header('Connection', 'close')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format: str, *args: object) -> None:
+        pass  # silence per-request logging during tests
+
+
+class TestConnectionReuse(unittest.TestCase):
+    def setUp(self) -> None:
+        self._server = ThreadingHTTPServer(('127.0.0.1', 0), ConnectionTrackingHandler)
+        self._port = self._server.server_address[1]
+        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+        self._thread.start()
+
+    def tearDown(self) -> None:
+        self._server.shutdown()
+        self._server.server_close()
+        self._thread.join()
+
+    def _client(self, **kwargs: object) -> Client:
+        return Client(
+            host='127.0.0.1', port=self._port, version='', https=False, **kwargs
+        )
+
+    def test_connection_is_reused_across_requests_by_default(self) -> None:
+        client = self._client()
+        session = client.session()
+
+        first = session.get(client.url())
+        second = session.get(client.url())
+
+        # Same source port on both requests => the TCP connection was reused.
+        assert_that(
+            first.headers['X-Client-Port'],
+            equal_to(second.headers['X-Client-Port']),
+        )
+        assert_that(
+            first.headers['X-Seen-Connection'], is_not(contains_string('close'))
+        )
+
+    def test_connection_not_reused_when_connection_reuse_is_false(self) -> None:
+        client = self._client(connection_reuse=False)
+        session = client.session()
+
+        first = session.get(client.url())
+        second = session.get(client.url())
+
+        # Connection: close makes the server drop the socket, so the next
+        # request must open a new connection with a new source port.
+        assert_that(
+            first.headers['X-Client-Port'],
+            is_not(equal_to(second.headers['X-Client-Port'])),
+        )
+        assert_that(first.headers['X-Seen-Connection'], equal_to('close'))
+
+    def test_keep_alive_header_is_sent_with_expected_syntax(self) -> None:
+        client = self._client(keep_alive_timeout=5, keep_alive_max=100)
+
+        response = client.session().get(client.url())
+
+        assert_that(
+            response.headers['X-Seen-Keep-Alive'], equal_to('timeout=5, max=100')
+        )
+        assert_that(
+            response.headers['X-Seen-Connection'], is_not(contains_string('close'))
+        )
+
+    def test_connection_close_is_sent_and_keep_alive_suppressed(self) -> None:
+        client = self._client(connection_reuse=False, keep_alive_timeout=5)
+
+        response = client.session().get(client.url())
+
+        assert_that(response.headers['X-Seen-Connection'], equal_to('close'))
+        assert_that(response.headers['X-Seen-Keep-Alive'], equal_to(''))
