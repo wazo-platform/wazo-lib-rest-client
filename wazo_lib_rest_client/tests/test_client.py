@@ -300,6 +300,14 @@ class TestBaseClient(unittest.TestCase):
         assert_that(client.session() is session)
         assert_that(session.headers, has_entry('X-Auth-Token', 'new-token'))
 
+    def test_set_empty_token_removes_header_from_existing_session(self):
+        client = self.new_client(token='a-token')
+        session = client.session()
+
+        client.set_token('')
+
+        assert_that('X-Auth-Token' not in session.headers)
+
     def test_tenant_uuid_assignment_updates_existing_session(self):
         client = self.new_client(tenant='old-tenant')
         session = client.session()

@@ -171,7 +171,10 @@ class BaseClient:
     def set_token(self, token: str) -> None:
         self._token_id = token
         if self._session is not None:
-            self._session.headers['X-Auth-Token'] = token
+            if token:
+                self._session.headers['X-Auth-Token'] = token
+            else:
+                self._session.headers.pop('X-Auth-Token', None)
 
     def url(self, *fragments: str) -> str:
         base = self._url_fmt.format(
