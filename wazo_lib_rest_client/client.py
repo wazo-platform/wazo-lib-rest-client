@@ -41,6 +41,9 @@ class BaseClient:
         verify_certificate: bool = True,
         prefix: str | None = None,
         user_agent: str = '',
+        connection_reuse: bool = True,
+        keep_alive_timeout: int | None = None,
+        keep_alive_max: int | None = None,
         **kwargs: Any,
     ) -> None:
         if not host:
@@ -56,6 +59,11 @@ class BaseClient:
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
         self._user_agent = user_agent
+        self._connection_reuse = connection_reuse
+        self._keep_alive_timeout = keep_alive_timeout
+        self._keep_alive_max = keep_alive_max
+        self._session: Session | None = None
+        self._tenant_uuid: str | None = None
         if kwargs:
             logger.debug(
                 '%s received unexpected arguments: %s',
@@ -93,8 +101,20 @@ class BaseClient:
             setattr(self, ext.name, ext.plugin(self))
 
     def session(self) -> Session:
+        if self._session is None:
+            self._session = self._create_session()
+        return self._session
+
+    def _create_session(self) -> Session:
         session = Session()
-        session.headers = {'Connection': 'close'}
+        session.headers = {}
+
+        if self._connection_reuse:
+            keep_alive = self._build_keep_alive_header()
+            if keep_alive:
+                session.headers['Keep-Alive'] = keep_alive
+        else:
+            session.headers['Connection'] = 'close'
 
         if self.timeout is not None:
             session.request = partial(  # type: ignore[method-assign]
@@ -119,6 +139,27 @@ class BaseClient:
 
         return session
 
+    def _build_keep_alive_header(self) -> str | None:
+        parts = []
+        if self._keep_alive_timeout is not None:
+            parts.append(f'timeout={self._keep_alive_timeout}')
+        if self._keep_alive_max is not None:
+            parts.append(f'max={self._keep_alive_max}')
+        return ', '.join(parts) if parts else None
+
+    @property
+    def tenant_uuid(self) -> str | None:
+        return self._tenant_uuid
+
+    @tenant_uuid.setter
+    def tenant_uuid(self, value: str | None) -> None:
+        self._tenant_uuid = value
+        if self._session is not None:
+            if value:
+                self._session.headers['Wazo-Tenant'] = value
+            else:
+                self._session.headers.pop('Wazo-Tenant', None)
+
     def set_tenant(self, tenant_uuid: str) -> None:
         logger.warning('set_tenant() is deprecated. Please use tenant_uuid')
         self.tenant_uuid = tenant_uuid
@@ -129,6 +170,8 @@ class BaseClient:
 
     def set_token(self, token: str) -> None:
         self._token_id = token
+        if self._session is not None:
+            self._session.headers['X-Auth-Token'] = token
 
     def url(self, *fragments: str) -> str:
         base = self._url_fmt.format(

@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -116,6 +116,14 @@ class TestLiveClient(unittest.TestCase):
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
         time.sleep(2)
+
+        # The client now keeps a persistent session, so its cookie jar
+        # survives across calls. This test's server stores its digest-auth
+        # nonce in a Flask session cookie that expires after 1s; resending
+        # the stale cookie breaks the re-auth handshake. Clearing the jar
+        # reproduces the original "fresh session per call" precondition so we
+        # still exercise recovery from server-side auth-session expiry.
+        c.session().cookies.clear()
 
         result = c.example()
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
@@ -277,6 +285,74 @@ class TestBaseClient(unittest.TestCase):
         result = client.tenant()
 
         assert_that(result, equal_to(tenant_id))
+
+    def test_session_is_persistent(self):
+        client = self.new_client()
+
+        assert_that(client.session() is client.session())
+
+    def test_set_token_updates_existing_session(self):
+        client = self.new_client(token='old-token')
+        session = client.session()
+
+        client.set_token('new-token')
+
+        assert_that(client.session() is session)
+        assert_that(session.headers, has_entry('X-Auth-Token', 'new-token'))
+
+    def test_tenant_uuid_assignment_updates_existing_session(self):
+        client = self.new_client(tenant='old-tenant')
+        session = client.session()
+
+        client.tenant_uuid = 'new-tenant'
+
+        assert_that(client.session() is session)
+        assert_that(session.headers, has_entry('Wazo-Tenant', 'new-tenant'))
+
+    def test_connection_reuse_false_sets_connection_close(self):
+        client = self.new_client(connection_reuse=False)
+
+        session = client.session()
+
+        assert_that(session.headers, has_entry('Connection', 'close'))
+
+    def test_default_no_connection_close(self):
+        client = self.new_client()
+
+        session = client.session()
+
+        assert_that('Connection' not in session.headers)
+
+    def test_keep_alive_timeout(self):
+        client = self.new_client(keep_alive_timeout=5)
+
+        session = client.session()
+
+        assert_that(session.headers, has_entry('Keep-Alive', 'timeout=5'))
+
+    def test_keep_alive_max(self):
+        client = self.new_client(keep_alive_max=100)
+
+        session = client.session()
+
+        assert_that(session.headers, has_entry('Keep-Alive', 'max=100'))
+
+    def test_keep_alive_both(self):
+        client = self.new_client(keep_alive_timeout=5, keep_alive_max=100)
+
+        session = client.session()
+
+        assert_that(session.headers, has_entry('Keep-Alive', 'timeout=5, max=100'))
+
+    def test_keep_alive_ignored_when_connection_reuse_false(self):
+        client = self.new_client(
+            connection_reuse=False, keep_alive_timeout=5, keep_alive_max=100
+        )
+
+        session = client.session()
+
+        assert_that('Keep-Alive' not in session.headers)
+        assert_that(session.headers, has_entry('Connection', 'close'))
 
     def test_given_no_exception_when_is_server_reachable_then_true(self):
         session = Mock()
