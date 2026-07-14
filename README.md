@@ -69,6 +69,38 @@ client_1 = Client(https=True, verify_certificate=True)
 client_2 = Client(https=True, verify_certificate='<path/to/bundle/file>')
 ```
 
+Connection reuse:
+
+By default the client keeps a single persistent `requests.Session` and reuses
+it across calls, so the underlying TCP connections are reused (HTTP
+keep-alive). This avoids paying for a new connection on every inter-service
+call.
+
+The behaviour can be tuned through the client constructor:
+
+- `connection_reuse` (default `True`): when `False`, the client sends
+  `Connection: close` and does not advertise keep-alive, restoring the previous
+  "new connection per request" behaviour. Use this for call paths where holding
+  connections open is undesirable.
+- `keep_alive_timeout` (default `None`): when set, adds `timeout=<n>` to the
+  `Keep-Alive` request header.
+- `keep_alive_max` (default `None`): when set, adds `max=<n>` to the
+  `Keep-Alive` request header.
+
+```python
+client = Client(
+    host='localhost',
+    connection_reuse=True,
+    keep_alive_timeout=5,
+    keep_alive_max=100,
+)
+```
+
+Because the session is shared for the lifetime of the client, a single client
+instance is not safe for unsynchronized concurrent requests from multiple
+threads (a `requests.Session` is not guaranteed thread-safe). Use one client
+per thread, or `connection_reuse=False`, when issuing requests concurrently.
+
 
 Running unit tests
 ------------------

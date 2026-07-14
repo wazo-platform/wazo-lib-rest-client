@@ -101,6 +101,15 @@ class BaseClient:
             setattr(self, ext.name, ext.plugin(self))
 
     def session(self) -> Session:
+        """Return the client's persistent ``requests.Session``.
+
+        The session is created lazily on first use and reused for the
+        lifetime of the client so that HTTP connections are reused. A
+        ``requests.Session`` is not guaranteed thread-safe, so a single
+        client instance must not be shared for unsynchronized concurrent
+        requests across threads; use one client per thread (or
+        ``connection_reuse=False``) in that case.
+        """
         if self._session is None:
             self._session = self._create_session()
         return self._session
