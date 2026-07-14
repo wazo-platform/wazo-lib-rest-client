@@ -6,10 +6,9 @@ from __future__ import annotations
 import logging
 import os
 import sys
-from functools import partial
 from typing import Any
 
-from requests import HTTPError, RequestException, Session
+from requests import HTTPError, RequestException, Response, Session
 from requests.packages.urllib3 import disable_warnings
 from stevedore import extension
 
@@ -125,10 +124,17 @@ class BaseClient:
         else:
             session.headers['Connection'] = 'close'
 
-        if self.timeout is not None:
-            session.request = partial(  # type: ignore[method-assign]
-                session.request, timeout=self.timeout
-            )
+        # Inject the client timeout on each request, reading self.timeout
+        # dynamically so a timeout changed after the (now persistent) session
+        # was created is still honoured by later calls.
+        unbound_request = session.request
+
+        def request_with_timeout(*args: Any, **kwargs: Any) -> Response:
+            if self.timeout is not None:
+                kwargs.setdefault('timeout', self.timeout)
+            return unbound_request(*args, **kwargs)
+
+        session.request = request_with_timeout  # type: ignore[method-assign]
 
         if self._https:
             if not self._verify_certificate:

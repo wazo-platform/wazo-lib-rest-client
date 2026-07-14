@@ -244,6 +244,17 @@ class TestBaseClient(unittest.TestCase):
         else:
             self.fail('Should have timeout after 1 second')
 
+    def test_timeout_change_is_applied_to_existing_session(self):
+        client = self.new_client(timeout=1)
+        session = client.session()
+
+        client.timeout = 5
+
+        with patch.object(session, 'send', return_value=Mock()) as send:
+            session.get('http://example.invalid')
+
+        assert_that(send.call_args.kwargs, has_entry('timeout', 5))
+
     def test_token(self):
         token_id = 'the-one-ring'
         client = self.new_client(token=token_id)
