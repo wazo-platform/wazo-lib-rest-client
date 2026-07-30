@@ -74,11 +74,6 @@ The client keeps a single persistent `requests.Session` and reuses it across
 calls, so the underlying TCP connections are reused (HTTP/1.1 keep-alive).
 This avoids paying for a new connection on every inter-service call.
 
-Because the session is shared for the lifetime of the client, a single client
-instance is not safe for unsynchronized concurrent requests from multiple
-threads (a `requests.Session` is not guaranteed thread-safe). Use one client
-per thread when issuing requests concurrently.
-
 Running unit tests
 ------------------
 

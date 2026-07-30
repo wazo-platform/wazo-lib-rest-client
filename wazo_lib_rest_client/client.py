@@ -56,7 +56,7 @@ class BaseClient:
         self._prefix = self._build_prefix(prefix)
         self._user_agent = user_agent
         self._session: Session | None = None
-        self._tenant_uuid: str | None = None
+        self.tenant_uuid = tenant
         if kwargs:
             logger.debug(
                 '%s received unexpected arguments: %s',
@@ -64,8 +64,6 @@ class BaseClient:
                 list(kwargs.keys()),
             )
         self._load_plugins()
-
-        self.tenant_uuid = tenant
 
     def _build_prefix(self, prefix: str | None) -> str:
         if not prefix:
@@ -96,11 +94,11 @@ class BaseClient:
     def session(self) -> Session:
         """Return the client's persistent ``requests.Session``.
 
-        The session is created lazily on first use and reused for the
-        lifetime of the client so that HTTP connections are reused. A
-        ``requests.Session`` is not guaranteed thread-safe, so a single
-        client instance must not be shared for unsynchronized concurrent
-        requests across threads; use one client per thread in that case.
+        Created lazily and reused for the lifetime of the client so that
+        HTTP connections are reused. Timeout, token and tenant are
+        injected per request from the client's current attributes:
+        changing those is safe with concurrent requests, but the session
+        itself (e.g. its cookie jar) is not fully thread-safe.
         """
         if self._session is None:
             self._session = self._create_session()
@@ -110,17 +108,23 @@ class BaseClient:
         session = Session()
         session.headers = {}
 
-        # Inject the client timeout on each request, reading self.timeout
-        # dynamically so a timeout changed after the (now persistent) session
-        # was created is still honoured by later calls.
+        # Inject timeout/token/tenant per request instead of storing them in
+        # session.headers: mutating a live session's headers is not
+        # thread-safe. Caller-supplied headers win.
         unbound_request = session.request
 
-        def request_with_timeout(*args: Any, **kwargs: Any) -> Response:
+        def request_with_client_state(*args: Any, **kwargs: Any) -> Response:
             if self.timeout is not None:
                 kwargs.setdefault('timeout', self.timeout)
+            headers = dict(kwargs.get('headers') or {})
+            if self._token_id:
+                headers.setdefault('X-Auth-Token', self._token_id)
+            if self.tenant_uuid:
+                headers.setdefault('Wazo-Tenant', self.tenant_uuid)
+            kwargs['headers'] = headers
             return unbound_request(*args, **kwargs)
 
-        session.request = request_with_timeout  # type: ignore[method-assign]
+        session.request = request_with_client_state  # type: ignore[method-assign]
 
         if self._https:
             if not self._verify_certificate:
@@ -129,29 +133,10 @@ class BaseClient:
             else:
                 session.verify = self._verify_certificate
 
-        if self._token_id:
-            session.headers['X-Auth-Token'] = self._token_id
-
-        if self.tenant_uuid:
-            session.headers['Wazo-Tenant'] = self.tenant_uuid
-
         if self._user_agent:
             session.headers['User-agent'] = self._user_agent
 
         return session
-
-    @property
-    def tenant_uuid(self) -> str | None:
-        return self._tenant_uuid
-
-    @tenant_uuid.setter
-    def tenant_uuid(self, value: str | None) -> None:
-        self._tenant_uuid = value
-        if self._session is not None:
-            if value:
-                self._session.headers['Wazo-Tenant'] = value
-            else:
-                self._session.headers.pop('Wazo-Tenant', None)
 
     def set_tenant(self, tenant_uuid: str) -> None:
         logger.warning('set_tenant() is deprecated. Please use tenant_uuid')
@@ -163,11 +148,6 @@ class BaseClient:
 
     def set_token(self, token: str) -> None:
         self._token_id = token
-        if self._session is not None:
-            if token:
-                self._session.headers['X-Auth-Token'] = token
-            else:
-                self._session.headers.pop('X-Auth-Token', None)
 
     def url(self, *fragments: str) -> str:
         base = self._url_fmt.format(

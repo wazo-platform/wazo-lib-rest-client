@@ -156,6 +156,12 @@ class TestBaseClient(unittest.TestCase):
             **kwargs,
         )
 
+    def _request_headers(self, client):
+        session = client.session()
+        with patch.object(session, 'send', return_value=Mock()) as send:
+            session.get('http://example.invalid')
+        return send.call_args.args[0].headers
+
     @patch.object(logger, 'debug')
     def test_that_extra_kwargs_are_ignored(self, logger_debug):
         self.new_client(patate=True)
@@ -259,9 +265,9 @@ class TestBaseClient(unittest.TestCase):
         token_id = 'the-one-ring'
         client = self.new_client(token=token_id)
 
-        session = client.session()
+        headers = self._request_headers(client)
 
-        assert_that(session.headers, has_entry('X-Auth-Token', token_id))
+        assert_that(headers, has_entry('X-Auth-Token', token_id))
 
     def test_set_token(self):
         token_id = 'the-one-ring'
@@ -269,15 +275,15 @@ class TestBaseClient(unittest.TestCase):
 
         client.set_token(token_id)
 
-        session = client.session()
-        assert_that(session.headers, has_entry('X-Auth-Token', token_id))
+        headers = self._request_headers(client)
+        assert_that(headers, has_entry('X-Auth-Token', token_id))
 
     def test_tenant_param(self):
         tenant_id = 'my-tenant'
         client = self.new_client(tenant=tenant_id)
 
-        session = client.session()
-        assert_that(session.headers, has_entry('Wazo-Tenant', tenant_id))
+        headers = self._request_headers(client)
+        assert_that(headers, has_entry('Wazo-Tenant', tenant_id))
 
     def test_set_tenant(self):
         tenant_id = 'my-tenant'
@@ -285,8 +291,8 @@ class TestBaseClient(unittest.TestCase):
 
         client.set_tenant(tenant_id)
 
-        session = client.session()
-        assert_that(session.headers, has_entry('Wazo-Tenant', tenant_id))
+        headers = self._request_headers(client)
+        assert_that(headers, has_entry('Wazo-Tenant', tenant_id))
 
     def test_tenant(self):
         tenant_id = 'my-tenant'
@@ -302,31 +308,48 @@ class TestBaseClient(unittest.TestCase):
 
         assert_that(client.session() is client.session())
 
-    def test_set_token_updates_existing_session(self):
+    def test_set_token_applies_to_later_requests(self):
         client = self.new_client(token='old-token')
         session = client.session()
 
         client.set_token('new-token')
 
         assert_that(client.session() is session)
-        assert_that(session.headers, has_entry('X-Auth-Token', 'new-token'))
+        headers = self._request_headers(client)
+        assert_that(headers, has_entry('X-Auth-Token', 'new-token'))
 
-    def test_set_empty_token_removes_header_from_existing_session(self):
+    def test_set_empty_token_removes_header_from_later_requests(self):
         client = self.new_client(token='a-token')
-        session = client.session()
+        client.session()
 
         client.set_token('')
 
-        assert_that('X-Auth-Token' not in session.headers)
+        headers = self._request_headers(client)
+        assert_that('X-Auth-Token' not in headers)
 
-    def test_tenant_uuid_assignment_updates_existing_session(self):
+    def test_tenant_uuid_assignment_applies_to_later_requests(self):
         client = self.new_client(tenant='old-tenant')
         session = client.session()
 
         client.tenant_uuid = 'new-tenant'
 
         assert_that(client.session() is session)
-        assert_that(session.headers, has_entry('Wazo-Tenant', 'new-tenant'))
+        headers = self._request_headers(client)
+        assert_that(headers, has_entry('Wazo-Tenant', 'new-tenant'))
+
+    def test_request_headers_override_client_token_and_tenant(self):
+        client = self.new_client(token='client-token', tenant='client-tenant')
+        session = client.session()
+
+        with patch.object(session, 'send', return_value=Mock()) as send:
+            session.get(
+                'http://example.invalid',
+                headers={'X-Auth-Token': 'call-token', 'Wazo-Tenant': 'call-tenant'},
+            )
+
+        headers = send.call_args.args[0].headers
+        assert_that(headers, has_entry('X-Auth-Token', 'call-token'))
+        assert_that(headers, has_entry('Wazo-Tenant', 'call-tenant'))
 
     def test_default_no_connection_close(self):
         client = self.new_client()
