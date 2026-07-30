@@ -8,8 +8,16 @@ import os
 import sys
 from typing import Any
 
-from requests import HTTPError, RequestException, Response, Session
+from requests import (
+    HTTPError,
+    PreparedRequest,
+    Request,
+    RequestException,
+    Response,
+    Session,
+)
 from requests.packages.urllib3 import disable_warnings
+from requests.structures import CaseInsensitiveDict
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
@@ -108,23 +116,32 @@ class BaseClient:
         session = Session()
         session.headers = {}
 
-        # Inject timeout/token/tenant per request instead of storing them in
-        # session.headers: mutating a live session's headers is not
-        # thread-safe. Caller-supplied headers win.
-        unbound_request = session.request
+        # Injected per request because mutating a live session's headers is
+        # not thread-safe. Caller-supplied headers win, whatever their casing.
+        unbound_prepare_request = session.prepare_request
 
-        def request_with_client_state(*args: Any, **kwargs: Any) -> Response:
-            if self.timeout is not None:
-                kwargs.setdefault('timeout', self.timeout)
-            headers = dict(kwargs.get('headers') or {})
+        def prepare_request_with_client_state(request: Request) -> PreparedRequest:
+            headers = CaseInsensitiveDict(request.headers or {})
             if self._token_id:
                 headers.setdefault('X-Auth-Token', self._token_id)
             if self.tenant_uuid:
                 headers.setdefault('Wazo-Tenant', self.tenant_uuid)
-            kwargs['headers'] = headers
+            request.headers = headers
+            return unbound_prepare_request(request)
+
+        session.prepare_request = (  # type: ignore[method-assign]
+            prepare_request_with_client_state
+        )
+
+        # The timeout is a send-time option, not part of the prepared request.
+        unbound_request = session.request
+
+        def request_with_timeout(*args: Any, **kwargs: Any) -> Response:
+            if self.timeout is not None:
+                kwargs.setdefault('timeout', self.timeout)
             return unbound_request(*args, **kwargs)
 
-        session.request = request_with_client_state  # type: ignore[method-assign]
+        session.request = request_with_timeout  # type: ignore[method-assign]
 
         if self._https:
             if not self._verify_certificate:

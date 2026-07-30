@@ -351,6 +351,30 @@ class TestBaseClient(unittest.TestCase):
         assert_that(headers, has_entry('X-Auth-Token', 'call-token'))
         assert_that(headers, has_entry('Wazo-Tenant', 'call-tenant'))
 
+    def test_request_headers_override_regardless_of_casing(self):
+        client = self.new_client(token='client-token', tenant='client-tenant')
+        session = client.session()
+
+        with patch.object(session, 'send', return_value=Mock()) as send:
+            session.get(
+                'http://example.invalid',
+                headers={'x-auth-token': 'call-token', 'wazo-tenant': 'call-tenant'},
+            )
+
+        headers = send.call_args.args[0].headers
+        assert_that(headers, has_entry('x-auth-token', 'call-token'))
+        assert_that(headers, has_entry('wazo-tenant', 'call-tenant'))
+
+    def test_prepare_request_path_gets_token_and_tenant_injected(self):
+        client = self.new_client(token='the-token', tenant='the-tenant')
+        session = client.session()
+
+        request = requests.Request('GET', 'http://example.invalid')
+        prepared = session.prepare_request(request)
+
+        assert_that(prepared.headers, has_entry('X-Auth-Token', 'the-token'))
+        assert_that(prepared.headers, has_entry('Wazo-Tenant', 'the-tenant'))
+
     def test_default_no_connection_close(self):
         client = self.new_client()
 
