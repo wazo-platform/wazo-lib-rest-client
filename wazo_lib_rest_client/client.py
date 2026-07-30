@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import threading
 from typing import Any
 
 from requests import (
@@ -64,6 +65,7 @@ class BaseClient:
         self._prefix = self._build_prefix(prefix)
         self._user_agent = user_agent
         self._session: Session | None = None
+        self._session_lock = threading.Lock()
         self.tenant_uuid = tenant
         if kwargs:
             logger.debug(
@@ -100,16 +102,14 @@ class BaseClient:
             setattr(self, ext.name, ext.plugin(self))
 
     def session(self) -> Session:
-        """Return the client's persistent ``requests.Session``.
+        """Return the client's persistent session, created on first use.
 
-        Created lazily and reused for the lifetime of the client so that
-        HTTP connections are reused. Timeout, token and tenant are
-        injected per request from the client's current attributes:
-        changing those is safe with concurrent requests, but the session
-        itself (e.g. its cookie jar) is not fully thread-safe.
+        Timeout, token and tenant are injected per request from the
+        client's current attributes.
         """
-        if self._session is None:
-            self._session = self._create_session()
+        with self._session_lock:
+            if self._session is None:
+                self._session = self._create_session()
         return self._session
 
     def _create_session(self) -> Session:
