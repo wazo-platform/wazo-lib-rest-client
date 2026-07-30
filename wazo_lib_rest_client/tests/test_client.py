@@ -328,50 +328,12 @@ class TestBaseClient(unittest.TestCase):
         assert_that(client.session() is session)
         assert_that(session.headers, has_entry('Wazo-Tenant', 'new-tenant'))
 
-    def test_connection_reuse_false_sets_connection_close(self):
-        client = self.new_client(connection_reuse=False)
-
-        session = client.session()
-
-        assert_that(session.headers, has_entry('Connection', 'close'))
-
     def test_default_no_connection_close(self):
         client = self.new_client()
 
         session = client.session()
 
         assert_that('Connection' not in session.headers)
-
-    def test_keep_alive_timeout(self):
-        client = self.new_client(keep_alive_timeout=5)
-
-        session = client.session()
-
-        assert_that(session.headers, has_entry('Keep-Alive', 'timeout=5'))
-
-    def test_keep_alive_max(self):
-        client = self.new_client(keep_alive_max=100)
-
-        session = client.session()
-
-        assert_that(session.headers, has_entry('Keep-Alive', 'max=100'))
-
-    def test_keep_alive_both(self):
-        client = self.new_client(keep_alive_timeout=5, keep_alive_max=100)
-
-        session = client.session()
-
-        assert_that(session.headers, has_entry('Keep-Alive', 'timeout=5, max=100'))
-
-    def test_keep_alive_ignored_when_connection_reuse_false(self):
-        client = self.new_client(
-            connection_reuse=False, keep_alive_timeout=5, keep_alive_max=100
-        )
-
-        session = client.session()
-
-        assert_that('Keep-Alive' not in session.headers)
-        assert_that(session.headers, has_entry('Connection', 'close'))
 
     def test_given_no_exception_when_is_server_reachable_then_true(self):
         session = Mock()
@@ -406,7 +368,6 @@ class ConnectionTrackingHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
 
     def do_GET(self) -> None:
-        requested_close = self.headers.get('Connection', '').lower() == 'close'
         body = b'{"foo": "bar"}'
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
@@ -417,12 +378,6 @@ class ConnectionTrackingHandler(BaseHTTPRequestHandler):
         self.send_header('X-Client-Port', str(self.client_address[1]))
         # Echo the connection-management request headers back for assertions.
         self.send_header('X-Seen-Connection', self.headers.get('Connection', ''))
-        self.send_header('X-Seen-Keep-Alive', self.headers.get('Keep-Alive', ''))
-        # Reflect the close decision in the response (as a real server does) so
-        # the client discards the socket instead of pooling a dead connection.
-        if requested_close:
-            self.close_connection = True
-            self.send_header('Connection', 'close')
         self.end_headers()
         self.wfile.write(body)
 
@@ -462,38 +417,3 @@ class TestConnectionReuse(unittest.TestCase):
         assert_that(
             first.headers['X-Seen-Connection'], is_not(contains_string('close'))
         )
-
-    def test_connection_not_reused_when_connection_reuse_is_false(self) -> None:
-        client = self._client(connection_reuse=False)
-        session = client.session()
-
-        first = session.get(client.url())
-        second = session.get(client.url())
-
-        # Connection: close makes the server drop the socket, so the next
-        # request must open a new connection with a new source port.
-        assert_that(
-            first.headers['X-Client-Port'],
-            is_not(equal_to(second.headers['X-Client-Port'])),
-        )
-        assert_that(first.headers['X-Seen-Connection'], equal_to('close'))
-
-    def test_keep_alive_header_is_sent_with_expected_syntax(self) -> None:
-        client = self._client(keep_alive_timeout=5, keep_alive_max=100)
-
-        response = client.session().get(client.url())
-
-        assert_that(
-            response.headers['X-Seen-Keep-Alive'], equal_to('timeout=5, max=100')
-        )
-        assert_that(
-            response.headers['X-Seen-Connection'], is_not(contains_string('close'))
-        )
-
-    def test_connection_close_is_sent_and_keep_alive_suppressed(self) -> None:
-        client = self._client(connection_reuse=False, keep_alive_timeout=5)
-
-        response = client.session().get(client.url())
-
-        assert_that(response.headers['X-Seen-Connection'], equal_to('close'))
-        assert_that(response.headers['X-Seen-Keep-Alive'], equal_to(''))

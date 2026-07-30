@@ -40,9 +40,6 @@ class BaseClient:
         verify_certificate: bool = True,
         prefix: str | None = None,
         user_agent: str = '',
-        connection_reuse: bool = True,
-        keep_alive_timeout: int | None = None,
-        keep_alive_max: int | None = None,
         **kwargs: Any,
     ) -> None:
         if not host:
@@ -58,9 +55,6 @@ class BaseClient:
         self._verify_certificate = verify_certificate
         self._prefix = self._build_prefix(prefix)
         self._user_agent = user_agent
-        self._connection_reuse = connection_reuse
-        self._keep_alive_timeout = keep_alive_timeout
-        self._keep_alive_max = keep_alive_max
         self._session: Session | None = None
         self._tenant_uuid: str | None = None
         if kwargs:
@@ -106,8 +100,7 @@ class BaseClient:
         lifetime of the client so that HTTP connections are reused. A
         ``requests.Session`` is not guaranteed thread-safe, so a single
         client instance must not be shared for unsynchronized concurrent
-        requests across threads; use one client per thread (or
-        ``connection_reuse=False``) in that case.
+        requests across threads; use one client per thread in that case.
         """
         if self._session is None:
             self._session = self._create_session()
@@ -116,13 +109,6 @@ class BaseClient:
     def _create_session(self) -> Session:
         session = Session()
         session.headers = {}
-
-        if self._connection_reuse:
-            keep_alive = self._build_keep_alive_header()
-            if keep_alive:
-                session.headers['Keep-Alive'] = keep_alive
-        else:
-            session.headers['Connection'] = 'close'
 
         # Inject the client timeout on each request, reading self.timeout
         # dynamically so a timeout changed after the (now persistent) session
@@ -153,14 +139,6 @@ class BaseClient:
             session.headers['User-agent'] = self._user_agent
 
         return session
-
-    def _build_keep_alive_header(self) -> str | None:
-        parts = []
-        if self._keep_alive_timeout is not None:
-            parts.append(f'timeout={self._keep_alive_timeout}')
-        if self._keep_alive_max is not None:
-            parts.append(f'max={self._keep_alive_max}')
-        return ', '.join(parts) if parts else None
 
     @property
     def tenant_uuid(self) -> str | None:
