@@ -19,6 +19,7 @@ from requests import (
     Session,
 )
 from requests.packages.urllib3 import disable_warnings
+from requests.structures import CaseInsensitiveDict
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
@@ -115,7 +116,7 @@ class BaseClient:
 
     def _create_session(self) -> Session:
         session = Session()
-        session.headers = {}
+        session.headers = CaseInsensitiveDict()
         # A shared session would otherwise resend server-set cookies on every call.
         session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
 
