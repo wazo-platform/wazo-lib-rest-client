@@ -18,7 +18,6 @@ from requests import (
     Session,
 )
 from requests.packages.urllib3 import disable_warnings
-from requests.structures import CaseInsensitiveDict
 from stevedore import extension
 
 logger = logging.getLogger(__name__)
@@ -116,18 +115,16 @@ class BaseClient:
         session = Session()
         session.headers = {}
 
-        # Injected per request because mutating a live session's headers is
-        # not thread-safe. Caller-supplied headers win, whatever their casing.
+        # Injected per request: mutating a live session's headers is not thread-safe.
         unbound_prepare_request = session.prepare_request
 
         def prepare_request_with_client_state(request: Request) -> PreparedRequest:
-            headers = CaseInsensitiveDict(request.headers or {})
+            prepared = unbound_prepare_request(request)
             if self._token_id:
-                headers.setdefault('X-Auth-Token', self._token_id)
+                prepared.headers.setdefault('X-Auth-Token', self._token_id)
             if self.tenant_uuid:
-                headers.setdefault('Wazo-Tenant', self.tenant_uuid)
-            request.headers = headers
-            return unbound_prepare_request(request)
+                prepared.headers.setdefault('Wazo-Tenant', self.tenant_uuid)
+            return prepared
 
         session.prepare_request = (  # type: ignore[method-assign]
             prepare_request_with_client_state
