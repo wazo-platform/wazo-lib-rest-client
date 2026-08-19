@@ -1,4 +1,4 @@
-# Copyright 2014-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -277,6 +277,13 @@ class TestBaseClient(unittest.TestCase):
         result = client.tenant()
 
         assert_that(result, equal_to(tenant_id))
+
+    def test_no_connection_close_header(self):
+        client = self.new_client()
+
+        session = client.session()
+
+        assert_that('Connection' not in session.headers)
 
     def test_given_no_exception_when_is_server_reachable_then_true(self):
         session = Mock()

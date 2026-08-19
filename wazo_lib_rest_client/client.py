@@ -94,7 +94,7 @@ class BaseClient:
 
     def session(self) -> Session:
         session = Session()
-        session.headers = {'Connection': 'close'}
+        session.headers = {}
 
         if self.timeout is not None:
             session.request = partial(  # type: ignore[method-assign]
