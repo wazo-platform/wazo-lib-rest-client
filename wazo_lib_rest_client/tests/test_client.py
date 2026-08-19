@@ -20,7 +20,6 @@ from hamcrest import (
     equal_to,
     has_entry,
     is_,
-    is_not,
 )
 from requests import Session
 from requests.exceptions import HTTPError, RequestException, Timeout
@@ -459,9 +458,8 @@ class TestConnectionReuse(unittest.TestCase):
             first.headers['X-Client-Port'],
             equal_to(second.headers['X-Client-Port']),
         )
-        assert_that(
-            first.headers['X-Seen-Connection'], is_not(contains_string('close'))
-        )
+        # No Connection header is sent at all, so HTTP/1.1 keep-alive applies.
+        assert_that(first.headers['X-Seen-Connection'], equal_to(''))
 
     def test_server_cookies_are_not_persisted_across_requests(self) -> None:
         client = self._client()
