@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import threading
+from http.cookiejar import DefaultCookiePolicy
 from typing import Any
 
 from requests import (
@@ -114,6 +115,8 @@ class BaseClient:
     def _create_session(self) -> Session:
         session = Session()
         session.headers = {}
+        # A shared session would otherwise resend server-set cookies on every call.
+        session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
 
         # Injected per request: mutating a live session's headers is not thread-safe.
         unbound_prepare_request = session.prepare_request

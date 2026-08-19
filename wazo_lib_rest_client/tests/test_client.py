@@ -121,10 +121,6 @@ class TestLiveClient(unittest.TestCase):
 
         time.sleep(2)
 
-        # Clear the persistent session's cookie jar so the expired digest-auth
-        # nonce cookie isn't resent, letting the client re-authenticate.
-        c.session().cookies.clear()
-
         result = c.example()
         assert_that(result, equal_to(b'''{"foo": "bar"}'''))
 
@@ -425,6 +421,8 @@ class ConnectionTrackingHandler(BaseHTTPRequestHandler):
         self.send_header('X-Client-Port', str(self.client_address[1]))
         # Echo the connection-management request headers back for assertions.
         self.send_header('X-Seen-Connection', self.headers.get('Connection', ''))
+        self.send_header('Set-Cookie', 'session=should-not-be-kept; Path=/')
+        self.send_header('X-Seen-Cookie', self.headers.get('Cookie', ''))
         self.end_headers()
         self.wfile.write(body)
 
@@ -464,3 +462,13 @@ class TestConnectionReuse(unittest.TestCase):
         assert_that(
             first.headers['X-Seen-Connection'], is_not(contains_string('close'))
         )
+
+    def test_server_cookies_are_not_persisted_across_requests(self) -> None:
+        client = self._client()
+        session = client.session()
+
+        session.get(client.url())
+        second = session.get(client.url())
+
+        assert_that(second.headers['X-Seen-Cookie'], equal_to(''))
+        assert_that(len(session.cookies), equal_to(0))

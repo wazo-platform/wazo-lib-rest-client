@@ -74,6 +74,9 @@ The client keeps a single persistent `requests.Session` and reuses it across
 calls, so the underlying TCP connections are reused (HTTP/1.1 keep-alive).
 This avoids paying for a new connection on every inter-service call.
 
+The session does not keep cookies: cookies set by a server are discarded
+instead of being resent on later calls.
+
 Running unit tests
 ------------------
 
