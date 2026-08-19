@@ -3,3 +3,6 @@
       - wazo-tox-linters-py311
       - wazo-tox-py311
       - debian-packaging-bookworm
+    experimental:
+      jobs:
+        - wazo-acceptance-bookworm
