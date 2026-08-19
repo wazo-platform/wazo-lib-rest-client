@@ -105,7 +105,8 @@ class BaseClient:
         """Return the client's persistent session, created on first use.
 
         Timeout, token and tenant are injected per request from the
-        client's current attributes.
+        client's current attributes. The session is shared, so mutating it
+        affects every later call: pass per-call headers instead.
         """
         with self._session_lock:
             if self._session is None:
